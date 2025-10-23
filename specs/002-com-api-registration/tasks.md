@@ -64,13 +64,13 @@ Phase 6 (Polish & Integration Testing)
 
 ### Tasks
 
-- [ ] T001 Verify project builds successfully with `dotnet build`
-- [ ] T002 Verify all existing tests pass with `dotnet test`
-- [ ] T003 Review existing PrivilegeChecker.cs in src/WindowsSearchConfigurator/Services/
-- [ ] T004 Review existing AuditLogger.cs in src/WindowsSearchConfigurator/Services/
-- [ ] T005 Review existing ConsoleFormatter.cs in src/WindowsSearchConfigurator/Utilities/
-- [ ] T006 Review existing WindowsSearchInterop.cs in src/WindowsSearchConfigurator/Infrastructure/
-- [ ] T007 Create feature branch checkpoint: `git commit -m "chore(com): Prepare for COM API registration implementation"`
+- [x] T001 Verify project builds successfully with `dotnet build`
+- [x] T002 Verify all existing tests pass with `dotnet test`
+- [x] T003 Review existing PrivilegeChecker.cs in src/WindowsSearchConfigurator/Services/
+- [x] T004 Review existing AuditLogger.cs in src/WindowsSearchConfigurator/Services/
+- [x] T005 Review existing ConsoleFormatter.cs in src/WindowsSearchConfigurator/Utilities/
+- [x] T006 Review existing WindowsSearchInterop.cs in src/WindowsSearchConfigurator/Infrastructure/
+- [x] T007 Create feature branch checkpoint: `git commit -m "chore(com): Prepare for COM API registration implementation"`
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
