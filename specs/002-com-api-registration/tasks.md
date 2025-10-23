@@ -82,15 +82,15 @@ Phase 6 (Polish & Integration Testing)
 
 ### Tasks
 
-- [ ] T008 [P] Create COMValidationState enum in src/WindowsSearchConfigurator/Core/Models/COMValidationState.cs
-- [ ] T009 [P] Create RegistrationMode enum in src/WindowsSearchConfigurator/Core/Models/RegistrationMode.cs
-- [ ] T010 [P] Create RegistrationOutcome enum in src/WindowsSearchConfigurator/Core/Models/RegistrationOutcome.cs
-- [ ] T011 Create COMRegistrationStatus model in src/WindowsSearchConfigurator/Core/Models/COMRegistrationStatus.cs
-- [ ] T012 Create COMRegistrationAttempt model in src/WindowsSearchConfigurator/Core/Models/COMRegistrationAttempt.cs
-- [ ] T013 Create RegistrationOptions model in src/WindowsSearchConfigurator/Core/Models/RegistrationOptions.cs
-- [ ] T014 Create ICOMRegistrationDetector interface in src/WindowsSearchConfigurator/Core/Interfaces/ICOMRegistrationDetector.cs
-- [ ] T015 Create ICOMRegistrationService interface in src/WindowsSearchConfigurator/Core/Interfaces/ICOMRegistrationService.cs
-- [ ] T016 Commit foundational models: `git commit -m "feat(com): Add COM registration domain models and interfaces"`
+- [x] T008 [P] Create COMValidationState enum in src/WindowsSearchConfigurator/Core/Models/COMValidationState.cs
+- [x] T009 [P] Create RegistrationMode enum in src/WindowsSearchConfigurator/Core/Models/RegistrationMode.cs
+- [x] T010 [P] Create RegistrationOutcome enum in src/WindowsSearchConfigurator/Core/Models/RegistrationOutcome.cs
+- [x] T011 Create COMRegistrationStatus model in src/WindowsSearchConfigurator/Core/Models/COMRegistrationStatus.cs
+- [x] T012 Create COMRegistrationAttempt model in src/WindowsSearchConfigurator/Core/Models/COMRegistrationAttempt.cs
+- [x] T013 Create RegistrationOptions model in src/WindowsSearchConfigurator/Core/Models/RegistrationOptions.cs
+- [x] T014 Create ICOMRegistrationDetector interface in src/WindowsSearchConfigurator/Core/Interfaces/ICOMRegistrationDetector.cs
+- [x] T015 Create ICOMRegistrationService interface in src/WindowsSearchConfigurator/Core/Interfaces/ICOMRegistrationService.cs
+- [x] T016 Commit foundational models: `git commit -m "feat(com): Add COM registration domain models and interfaces"`
 
 ## Phase 3: User Story 1 - Detection and Notification (P1)
 
@@ -106,16 +106,16 @@ Phase 6 (Polish & Integration Testing)
 
 ### Tasks
 
-- [ ] T017 [US1] Create COMRegistrationDetector service in src/WindowsSearchConfigurator/Services/COMRegistrationDetector.cs with CLSID detection logic
-- [ ] T018 [US1] Create unit tests for COMRegistrationDetector in tests/WindowsSearchConfigurator.UnitTests/Services/COMRegistrationDetectorTests.cs
-- [ ] T019 [US1] Add COM validation method to WindowsSearchInterop in src/WindowsSearchConfigurator/Infrastructure/WindowsSearchInterop.cs
-- [ ] T020 [US1] Add COM validation tests to tests/WindowsSearchConfigurator.UnitTests/Infrastructure/WindowsSearchInteropTests.cs
-- [ ] T021 [US1] Add detection notification message to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
-- [ ] T022 [US1] Integrate COM detection into Program.cs startup in src/WindowsSearchConfigurator/Program.cs (detection only, no registration yet)
-- [ ] T023 [US1] Run unit tests for detection: `dotnet test --filter "FullyQualifiedName~COMRegistrationDetector"`
-- [ ] T024 [US1] Manual test: Run tool on system with COM unregistered, verify clear error message
-- [ ] T025 [US1] Manual test: Run tool on system with COM registered, verify no error message
-- [ ] T026 [US1] Commit US1 implementation: `git commit -m "feat(com): Implement COM detection and notification (US1)"`
+- [x] T017 [US1] Create COMRegistrationDetector service in src/WindowsSearchConfigurator/Services/COMRegistrationDetector.cs with CLSID detection logic
+- [x] T018 [US1] Create unit tests for COMRegistrationDetector in tests/WindowsSearchConfigurator.UnitTests/Services/COMRegistrationDetectorTests.cs
+- [x] T019 [US1] Add COM validation method to WindowsSearchInterop in src/WindowsSearchConfigurator/Infrastructure/WindowsSearchInterop.cs
+- [x] T020 [US1] Add COM validation tests to tests/WindowsSearchConfigurator.UnitTests/Infrastructure/WindowsSearchInteropTests.cs
+- [x] T021 [US1] Add detection notification message to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
+- [x] T022 [US1] Integrate COM detection into Program.cs startup in src/WindowsSearchConfigurator/Program.cs (detection only, no registration yet)
+- [x] T023 [US1] Run unit tests for detection: `dotnet test --filter "FullyQualifiedName~COMRegistrationDetector"`
+- [x] T024 [US1] Manual test: Run tool on system with COM unregistered, verify clear error message
+- [x] T025 [US1] Manual test: Run tool on system with COM registered, verify no error message
+- [x] T026 [US1] Commit US1 implementation: `git commit -m "feat(com): Implement COM detection and notification (US1)"`
 
 **Acceptance Criteria**:
 - ✅ Tool detects COM API registration status before any command execution

@@ -435,4 +435,63 @@ public class ConsoleFormatter
         );
         Console.Write(csv);
     }
+
+    /// <summary>
+    /// Displays an error message when COM API is not registered.
+    /// </summary>
+    /// <param name="status">The COM registration status.</param>
+    public static void ShowCOMNotRegisteredError(COMRegistrationStatus status)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR: Microsoft Windows Search COM API is not registered.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("The Windows Search Configurator requires this API to function. The COM API is typically");
+        Console.WriteLine("installed with Windows Search but may not be registered on this system.");
+        Console.WriteLine();
+        
+        // Provide specific details based on status
+        if (!status.CLSIDExists)
+        {
+            Console.WriteLine("Details: CLSID not found in registry.");
+        }
+        else if (!status.DLLExists)
+        {
+            Console.WriteLine($"Details: DLL not found at path: {status.DLLPath}");
+        }
+        else if (status.ValidationState != COMValidationState.Valid)
+        {
+            Console.WriteLine($"Details: COM object validation failed ({status.ValidationState}).");
+        }
+
+        if (!string.IsNullOrEmpty(status.ErrorMessage))
+        {
+            Console.WriteLine($"Error: {status.ErrorMessage}");
+        }
+    }
+
+    /// <summary>
+    /// Displays COM registration success message.
+    /// </summary>
+    public static void ShowCOMRegistrationSuccess()
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("SUCCESS: COM API registered successfully.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("Validating registration...");
+    }
+
+    /// <summary>
+    /// Displays COM validation success message.
+    /// </summary>
+    public static void ShowCOMValidationSuccess()
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("SUCCESS: COM API is functional.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("Continuing with your command...");
+        Console.WriteLine();
+    }
 }

@@ -43,6 +43,25 @@ public class Program
                 return 0;
             }
 
+            // Check COM API registration before proceeding (US1: Detection and Notification)
+            verboseLogger.WriteLine("Checking COM API registration status...");
+            var comDetector = serviceProvider.GetRequiredService<ICOMRegistrationDetector>();
+            var registrationStatus = comDetector.GetRegistrationStatus();
+            
+            if (!registrationStatus.IsRegistered)
+            {
+                verboseLogger.WriteLine($"COM API not registered. CLSID exists: {registrationStatus.CLSIDExists}, DLL exists: {registrationStatus.DLLExists}, Validation: {registrationStatus.ValidationState}");
+                ConsoleFormatter.ShowCOMNotRegisteredError(registrationStatus);
+                
+                // For now (US1 only), we just exit with an error
+                // US2-US4 will add registration options here
+                Console.WriteLine();
+                Console.WriteLine("Please ensure Windows Search is installed and the COM API is registered.");
+                return 1;
+            }
+            
+            verboseLogger.WriteLine("COM API is registered and functional.");
+
             // Create root command
             var rootCommand = new RootCommand("Windows Search Configurator - Manage Windows Search index rules");
             
@@ -110,6 +129,9 @@ public class Program
         services.AddSingleton<IPrivilegeChecker, PrivilegeChecker>();
         services.AddSingleton<IAuditLogger, AuditLogger>();
         services.AddSingleton<PathValidator>();
+
+        // Register COM registration services
+        services.AddSingleton<ICOMRegistrationDetector, COMRegistrationDetector>();
 
         // Register infrastructure services
         services.AddSingleton<RegistryAccessor>();
