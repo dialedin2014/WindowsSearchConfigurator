@@ -53,11 +53,76 @@ public class Program
                 verboseLogger.WriteLine($"COM API not registered. CLSID exists: {registrationStatus.CLSIDExists}, DLL exists: {registrationStatus.DLLExists}, Validation: {registrationStatus.ValidationState}");
                 ConsoleFormatter.ShowCOMNotRegisteredError(registrationStatus);
                 
-                // For now (US1 only), we just exit with an error
-                // US2-US4 will add registration options here
-                Console.WriteLine();
-                Console.WriteLine("Please ensure Windows Search is installed and the COM API is registered.");
-                return 1;
+                // US2-US3: Interactive registration workflow
+                // Prompt user for action
+                var choice = ConsoleFormatter.PromptCOMRegistration();
+                
+                if (choice == 'Q')
+                {
+                    verboseLogger.WriteLine("User chose to quit without registering.");
+                    return 1;
+                }
+                
+                if (choice == 'N')
+                {
+                    verboseLogger.WriteLine("User chose to see manual registration instructions.");
+                    ConsoleFormatter.ShowManualCOMRegistrationInstructions();
+                    return 1;
+                }
+                
+                // User chose 'Y' - attempt registration
+                verboseLogger.WriteLine("User chose to attempt automatic registration.");
+                
+                // US3: Check for administrative privileges
+                var privChecker = serviceProvider.GetRequiredService<IPrivilegeChecker>();
+                if (!privChecker.IsAdministrator())
+                {
+                    verboseLogger.WriteLine("User lacks administrative privileges.");
+                    ConsoleFormatter.ShowElevationInstructions();
+                    return 2; // Elevation needed
+                }
+                
+                verboseLogger.WriteLine("User has administrative privileges. Proceeding with registration.");
+                
+                // Attempt registration
+                ConsoleFormatter.ShowCOMRegistrationInProgress();
+                var comRegistrationService = serviceProvider.GetRequiredService<ICOMRegistrationService>();
+                var registrationOptions = new Core.Models.RegistrationOptions
+                {
+                    AutoRegister = false, // Interactive mode
+                    Silent = false,
+                    TimeoutSeconds = 30
+                };
+                
+                var registrationAttempt = await comRegistrationService.RegisterCOMAsync(registrationOptions);
+                verboseLogger.WriteLine($"Registration attempt completed: {registrationAttempt.Outcome}");
+                
+                if (registrationAttempt.Outcome == Core.Models.RegistrationOutcome.Success)
+                {
+                    ConsoleFormatter.ShowCOMRegistrationSuccess();
+                    
+                    // Validate registration
+                    var newStatus = comDetector.GetRegistrationStatus();
+                    if (newStatus.IsRegistered)
+                    {
+                        ConsoleFormatter.ShowCOMValidationSuccess();
+                    }
+                    else
+                    {
+                        verboseLogger.WriteLine("Warning: Registration reported success but validation failed.");
+                        ConsoleFormatter.ShowCOMRegistrationError(registrationAttempt);
+                        Console.WriteLine();
+                        ConsoleFormatter.ShowManualCOMRegistrationInstructions();
+                        return 1;
+                    }
+                }
+                else
+                {
+                    ConsoleFormatter.ShowCOMRegistrationError(registrationAttempt);
+                    Console.WriteLine();
+                    ConsoleFormatter.ShowManualCOMRegistrationInstructions();
+                    return 1;
+                }
             }
             
             verboseLogger.WriteLine("COM API is registered and functional.");
@@ -132,6 +197,7 @@ public class Program
 
         // Register COM registration services
         services.AddSingleton<ICOMRegistrationDetector, COMRegistrationDetector>();
+        services.AddSingleton<ICOMRegistrationService, COMRegistrationService>();
 
         // Register infrastructure services
         services.AddSingleton<RegistryAccessor>();

@@ -563,4 +563,114 @@ public class ConsoleFormatter
         Console.WriteLine(text);
         Console.ResetColor();
     }
+
+    /// <summary>
+    /// Prompts the user to choose whether to register the COM API.
+    /// </summary>
+    /// <returns>The user's choice: 'Y', 'N', or 'Q'.</returns>
+    public static char PromptCOMRegistration()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Would you like to attempt automatic registration? (requires administrative privileges)");
+        Console.WriteLine();
+        Console.WriteLine("Options:");
+        Console.WriteLine("  [Y] Yes - Attempt automatic registration now");
+        Console.WriteLine("  [N] No  - Show manual registration instructions");
+        Console.WriteLine("  [Q] Quit - Exit without registering");
+        Console.WriteLine();
+
+        while (true)
+        {
+            Console.Write("Enter your choice (Y/N/Q): ");
+            var input = Console.ReadLine()?.Trim().ToUpperInvariant();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("Invalid choice. Please enter Y, N, or Q.");
+                Console.WriteLine();
+                continue;
+            }
+
+            var choice = input[0];
+            if (choice == 'Y' || choice == 'N' || choice == 'Q')
+            {
+                return choice;
+            }
+
+            Console.WriteLine("Invalid choice. Please enter Y, N, or Q.");
+            Console.WriteLine();
+        }
+    }
+
+    /// <summary>
+    /// Displays manual COM registration instructions.
+    /// </summary>
+    public static void ShowManualCOMRegistrationInstructions()
+    {
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Manual COM API Registration Instructions:");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("To register the COM API manually:");
+        Console.WriteLine();
+        Console.WriteLine("  1. Open Command Prompt as Administrator:");
+        Console.WriteLine("     - Press Win + X");
+        Console.WriteLine("     - Select 'Command Prompt (Admin)' or 'Windows PowerShell (Admin)'");
+        Console.WriteLine();
+        Console.WriteLine("  2. Run the following command:");
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("     regsvr32 \"%SystemRoot%\\System32\\SearchAPI.dll\"");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("  3. Wait for confirmation message");
+        Console.WriteLine();
+        Console.WriteLine("  4. Run WindowsSearchConfigurator again");
+        Console.WriteLine();
+        Console.WriteLine("If registration fails, verify:");
+        Console.WriteLine("  - Windows Search is installed");
+        Console.WriteLine("  - SearchAPI.dll exists in System32 folder");
+        Console.WriteLine("  - You have administrator privileges");
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays elevation instructions when user lacks admin privileges.
+    /// </summary>
+    public static void ShowElevationInstructions()
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR: Administrative privileges required for COM API registration.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("To register the COM API, you must run WindowsSearchConfigurator as Administrator.");
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("How to run as Administrator:");
+        Console.ResetColor();
+        Console.WriteLine("  1. Right-click on WindowsSearchConfigurator.exe");
+        Console.WriteLine("  2. Select \"Run as administrator\"");
+        Console.WriteLine("  3. Try your command again");
+        Console.WriteLine();
+        Console.WriteLine("Or use this command in an elevated prompt:");
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("  WindowsSearchConfigurator.exe [your command]");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("Alternatively, you can register manually:");
+        Console.WriteLine("  1. Open Command Prompt as Administrator");
+        Console.WriteLine("  2. Run: regsvr32 \"%SystemRoot%\\System32\\SearchAPI.dll\"");
+        Console.WriteLine("  3. Run WindowsSearchConfigurator again");
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays a message indicating registration is in progress.
+    /// </summary>
+    public static void ShowCOMRegistrationInProgress()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Registering COM API...");
+    }
 }

@@ -151,11 +151,11 @@ Phase 6 (Polish & Integration Testing)
 
 ### Phase 4b: Privilege Checking Integration (2 files)
 
-- [ ] T033 [US3] Enhance PrivilegeChecker with COM-specific context in src/WindowsSearchConfigurator/Services/PrivilegeChecker.cs
-- [ ] T034 [US3] Add privilege check tests in tests/WindowsSearchConfigurator.UnitTests/Services/PrivilegeCheckerTests.cs
-- [ ] T035 [US3] Integrate registration workflow into Program.cs in src/WindowsSearchConfigurator/Program.cs
-- [ ] T036 [US3] Add elevation instructions to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
-- [ ] T037 [US3] Run all unit tests: `dotnet test --filter "FullyQualifiedName~UnitTests"`
+- [x] T033 [US3] Enhance PrivilegeChecker with COM-specific context in src/WindowsSearchConfigurator/Services/PrivilegeChecker.cs
+- [x] T034 [US3] Add privilege check tests in tests/WindowsSearchConfigurator.UnitTests/Services/PrivilegeCheckerTests.cs
+- [x] T035 [US3] Integrate registration workflow into Program.cs in src/WindowsSearchConfigurator/Program.cs
+- [x] T036 [US3] Add elevation instructions to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
+- [x] T037 [US3] Run all unit tests: `dotnet test --filter "FullyQualifiedName~UnitTests"`
 - [ ] T038 [US2][US3] Manual test (as admin): Accept registration offer → verify registration succeeds
 - [ ] T039 [US2][US3] Manual test (as admin): Decline registration offer → verify manual instructions shown
 - [ ] T040 [US3] Manual test (as standard user): Accept offer → verify elevation instructions shown
