@@ -19,20 +19,20 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create solution file WindowsSearchConfigurator.sln at repository root
-- [ ] T002 Create src/WindowsSearchConfigurator/WindowsSearchConfigurator.csproj targeting .NET 8.0
-- [ ] T003 [P] Create tests/WindowsSearchConfigurator.UnitTests/WindowsSearchConfigurator.UnitTests.csproj with NUnit, Moq, FluentAssertions references
-- [ ] T004 [P] Create tests/WindowsSearchConfigurator.IntegrationTests/WindowsSearchConfigurator.IntegrationTests.csproj
-- [ ] T005 [P] Create tests/WindowsSearchConfigurator.ContractTests/WindowsSearchConfigurator.ContractTests.csproj
-- [ ] T006 Add package references to src/WindowsSearchConfigurator.csproj: System.Management, System.CommandLine, System.Text.Json
-- [ ] T007 [P] Create src/WindowsSearchConfigurator/Core/Models/ directory structure
-- [ ] T008 [P] Create src/WindowsSearchConfigurator/Core/Interfaces/ directory structure
-- [ ] T009 [P] Create src/WindowsSearchConfigurator/Services/ directory structure
-- [ ] T010 [P] Create src/WindowsSearchConfigurator/Infrastructure/ directory structure
-- [ ] T011 [P] Create src/WindowsSearchConfigurator/Utilities/ directory structure
-- [ ] T012 [P] Create src/WindowsSearchConfigurator/Commands/ directory structure
-- [ ] T013 [P] Create .editorconfig at repository root with C# coding standards
-- [ ] T014 [P] Create .gitignore with standard .NET exclusions (bin/, obj/, etc.)
+- [X] T001 Create solution file WindowsSearchConfigurator.sln at repository root
+- [X] T002 Create src/WindowsSearchConfigurator/WindowsSearchConfigurator.csproj targeting .NET 8.0
+- [X] T003 [P] Create tests/WindowsSearchConfigurator.UnitTests/WindowsSearchConfigurator.UnitTests.csproj with NUnit, Moq, FluentAssertions references
+- [X] T004 [P] Create tests/WindowsSearchConfigurator.IntegrationTests/WindowsSearchConfigurator.IntegrationTests.csproj
+- [X] T005 [P] Create tests/WindowsSearchConfigurator.ContractTests/WindowsSearchConfigurator.ContractTests.csproj
+- [X] T006 Add package references to src/WindowsSearchConfigurator.csproj: System.Management, System.CommandLine, System.Text.Json
+- [X] T007 [P] Create src/WindowsSearchConfigurator/Core/Models/ directory structure
+- [X] T008 [P] Create src/WindowsSearchConfigurator/Core/Interfaces/ directory structure
+- [X] T009 [P] Create src/WindowsSearchConfigurator/Services/ directory structure
+- [X] T010 [P] Create src/WindowsSearchConfigurator/Infrastructure/ directory structure
+- [X] T011 [P] Create src/WindowsSearchConfigurator/Utilities/ directory structure
+- [X] T012 [P] Create src/WindowsSearchConfigurator/Commands/ directory structure
+- [X] T013 [P] Create .editorconfig at repository root with C# coding standards
+- [X] T014 [P] Create .gitignore with standard .NET exclusions (bin/, obj/, etc.)
 
 ---
 
@@ -42,33 +42,33 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T015 [P] Create RuleType enum in src/WindowsSearchConfigurator/Core/Models/RuleType.cs (Include, Exclude)
-- [ ] T016 [P] Create RuleSource enum in src/WindowsSearchConfigurator/Core/Models/RuleSource.cs (System, User, Imported)
-- [ ] T017 [P] Create FilterType enum in src/WindowsSearchConfigurator/Core/Models/FilterType.cs (Include, Exclude)
-- [ ] T018 [P] Create FilterTarget enum in src/WindowsSearchConfigurator/Core/Models/FilterTarget.cs (FileExtension, FileName, Subfolder)
-- [ ] T019 [P] Create PathType enum in src/WindowsSearchConfigurator/Core/Models/PathType.cs (Local, UNC, Relative)
-- [ ] T020 [P] Create IndexingDepth enum in src/WindowsSearchConfigurator/Core/Models/IndexingDepth.cs (NotIndexed, PropertiesOnly, PropertiesAndContents)
-- [ ] T021 [P] Create ValidationResult value object in src/WindowsSearchConfigurator/Core/Models/ValidationResult.cs
-- [ ] T022 [P] Create OperationResult value object in src/WindowsSearchConfigurator/Core/Models/OperationResult.cs
-- [ ] T023 [P] Create FileTypeFilter model in src/WindowsSearchConfigurator/Core/Models/FileTypeFilter.cs
-- [ ] T024 Create IndexLocation model in src/WindowsSearchConfigurator/Core/Models/IndexLocation.cs (depends on PathType)
-- [ ] T025 Create IndexRule model in src/WindowsSearchConfigurator/Core/Models/IndexRule.cs (depends on RuleType, RuleSource, FileTypeFilter)
-- [ ] T026 [P] Create FileExtensionSetting model in src/WindowsSearchConfigurator/Core/Models/FileExtensionSetting.cs (depends on IndexingDepth)
-- [ ] T027 [P] Create ConfigurationFile model in src/WindowsSearchConfigurator/Core/Models/ConfigurationFile.cs (depends on IndexRule, FileExtensionSetting)
-- [ ] T028 [P] Create ISearchIndexManager interface in src/WindowsSearchConfigurator/Core/Interfaces/ISearchIndexManager.cs
-- [ ] T029 [P] Create IConfigurationStore interface in src/WindowsSearchConfigurator/Core/Interfaces/IConfigurationStore.cs
-- [ ] T030 [P] Create IAuditLogger interface in src/WindowsSearchConfigurator/Core/Interfaces/IAuditLogger.cs
-- [ ] T031 [P] Create IPrivilegeChecker interface in src/WindowsSearchConfigurator/Core/Interfaces/IPrivilegeChecker.cs
-- [ ] T032 Implement PrivilegeChecker service in src/WindowsSearchConfigurator/Services/PrivilegeChecker.cs using WindowsPrincipal.IsInRole
-- [ ] T033 Implement AuditLogger service in src/WindowsSearchConfigurator/Services/AuditLogger.cs with file-based logging
-- [ ] T034 Implement PathValidator service in src/WindowsSearchConfigurator/Services/PathValidator.cs with UNC/local/relative path support and MAX_PATH validation
-- [ ] T035 [P] Create WindowsSearchInterop wrapper in src/WindowsSearchConfigurator/Infrastructure/WindowsSearchInterop.cs for COM API access
-- [ ] T036 [P] Create RegistryAccessor wrapper in src/WindowsSearchConfigurator/Infrastructure/RegistryAccessor.cs for registry operations
-- [ ] T037 [P] Create ServiceStatusChecker in src/WindowsSearchConfigurator/Infrastructure/ServiceStatusChecker.cs to verify Windows Search service status
-- [ ] T038 [P] Create WildcardMatcher utility in src/WindowsSearchConfigurator/Utilities/WildcardMatcher.cs for pattern matching
-- [ ] T039 [P] Create PathNormalizer utility in src/WindowsSearchConfigurator/Utilities/PathNormalizer.cs for path handling
-- [ ] T040 [P] Create ConsoleFormatter utility in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs for table/JSON/CSV output
-- [ ] T041 Create Program.cs entry point in src/WindowsSearchConfigurator/Program.cs with DI container setup and System.CommandLine root command
+- [X] T015 [P] Create RuleType enum in src/WindowsSearchConfigurator/Core/Models/RuleType.cs (Include, Exclude)
+- [X] T016 [P] Create RuleSource enum in src/WindowsSearchConfigurator/Core/Models/RuleSource.cs (System, User, Imported)
+- [X] T017 [P] Create FilterType enum in src/WindowsSearchConfigurator/Core/Models/FilterType.cs (Include, Exclude)
+- [X] T018 [P] Create FilterTarget enum in src/WindowsSearchConfigurator/Core/Models/FilterTarget.cs (FileExtension, FileName, Subfolder)
+- [X] T019 [P] Create PathType enum in src/WindowsSearchConfigurator/Core/Models/PathType.cs (Local, UNC, Relative)
+- [X] T020 [P] Create IndexingDepth enum in src/WindowsSearchConfigurator/Core/Models/IndexingDepth.cs (NotIndexed, PropertiesOnly, PropertiesAndContents)
+- [X] T021 [P] Create ValidationResult value object in src/WindowsSearchConfigurator/Core/Models/ValidationResult.cs
+- [X] T022 [P] Create OperationResult value object in src/WindowsSearchConfigurator/Core/Models/OperationResult.cs
+- [X] T023 [P] Create FileTypeFilter model in src/WindowsSearchConfigurator/Core/Models/FileTypeFilter.cs
+- [X] T024 Create IndexLocation model in src/WindowsSearchConfigurator/Core/Models/IndexLocation.cs (depends on PathType)
+- [X] T025 Create IndexRule model in src/WindowsSearchConfigurator/Core/Models/IndexRule.cs (depends on RuleType, RuleSource, FileTypeFilter)
+- [X] T026 [P] Create FileExtensionSetting model in src/WindowsSearchConfigurator/Core/Models/FileExtensionSetting.cs (depends on IndexingDepth)
+- [X] T027 [P] Create ConfigurationFile model in src/WindowsSearchConfigurator/Core/Models/ConfigurationFile.cs (depends on IndexRule, FileExtensionSetting)
+- [X] T028 [P] Create ISearchIndexManager interface in src/WindowsSearchConfigurator/Core/Interfaces/ISearchIndexManager.cs
+- [X] T029 [P] Create IConfigurationStore interface in src/WindowsSearchConfigurator/Core/Interfaces/IConfigurationStore.cs
+- [X] T030 [P] Create IAuditLogger interface in src/WindowsSearchConfigurator/Core/Interfaces/IAuditLogger.cs
+- [X] T031 [P] Create IPrivilegeChecker interface in src/WindowsSearchConfigurator/Core/Interfaces/IPrivilegeChecker.cs
+- [X] T032 Implement PrivilegeChecker service in src/WindowsSearchConfigurator/Services/PrivilegeChecker.cs using WindowsPrincipal.IsInRole
+- [X] T033 Implement AuditLogger service in src/WindowsSearchConfigurator/Services/AuditLogger.cs with file-based logging
+- [X] T034 Implement PathValidator service in src/WindowsSearchConfigurator/Services/PathValidator.cs with UNC/local/relative path support and MAX_PATH validation
+- [X] T035 [P] Create WindowsSearchInterop wrapper in src/WindowsSearchConfigurator/Infrastructure/WindowsSearchInterop.cs for COM API access
+- [X] T036 [P] Create RegistryAccessor wrapper in src/WindowsSearchConfigurator/Infrastructure/RegistryAccessor.cs for registry operations
+- [X] T037 [P] Create ServiceStatusChecker in src/WindowsSearchConfigurator/Infrastructure/ServiceStatusChecker.cs to verify Windows Search service status
+- [X] T038 [P] Create WildcardMatcher utility in src/WindowsSearchConfigurator/Utilities/WildcardMatcher.cs for pattern matching
+- [X] T039 [P] Create PathNormalizer utility in src/WindowsSearchConfigurator/Utilities/PathNormalizer.cs for path handling
+- [X] T040 [P] Create ConsoleFormatter utility in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs for table/JSON/CSV output
+- [X] T041 Create Program.cs entry point in src/WindowsSearchConfigurator/Program.cs with DI container setup and System.CommandLine root command
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
