@@ -1,17 +1,22 @@
-namespace WindowsSearchConfigurator.Infrastructure;
-
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using WindowsSearchConfigurator.Core.Models;
+
+namespace WindowsSearchConfigurator.Infrastructure;
 
 /// <summary>
 /// Provides COM API interop for Windows Search operations.
-/// This is a placeholder for Windows Search COM interop functionality.
 /// </summary>
 /// <remarks>
 /// Windows Search uses the ISearchCrawlScopeManager COM interface for managing index rules.
-/// Full implementation requires COM interop definitions which will be added during implementation.
+/// COM interfaces are accessed dynamically to avoid complex PInvoke declarations.
 /// </remarks>
+[SupportedOSPlatform("windows")]
 public class WindowsSearchInterop
 {
+    private const string SEARCH_MANAGER_PROGID = "SearchIndexer.CSearchManager";
+    private const string SYSTEM_CATALOG = "SystemIndex";
+
     /// <summary>
     /// Checks if Windows Search COM APIs are available on this system.
     /// </summary>
@@ -20,9 +25,14 @@ public class WindowsSearchInterop
     {
         try
         {
-            // This will be implemented with actual COM interop
-            // For now, return true on Windows platforms
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return false;
+            }
+
+            // Try to create the COM object
+            var type = Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID);
+            return type != null;
         }
         catch
         {
@@ -31,44 +41,180 @@ public class WindowsSearchInterop
     }
 
     /// <summary>
-    /// Gets the search catalog manager for COM operations.
+    /// Enumerates all scope rules from Windows Search.
     /// </summary>
-    /// <returns>Dynamic object representing the search catalog manager.</returns>
-    /// <remarks>
-    /// This method will create an instance of CSearchManager COM object
-    /// and return its ISearchCatalogManager interface.
-    /// Implementation requires COM interop which will be added during development.
-    /// </remarks>
-    public dynamic? GetSearchCatalogManager()
+    /// <param name="includeSystemRules">Whether to include system default rules.</param>
+    /// <returns>A collection of index rules.</returns>
+    public IEnumerable<IndexRule> EnumerateScopeRules(bool includeSystemRules)
     {
-        // TODO: Implement COM interop to create ISearchCatalogManager
-        // Type searchManagerType = Type.GetTypeFromProgID("SearchIndexer.CSearchManager");
-        // dynamic searchManager = Activator.CreateInstance(searchManagerType);
-        // return searchManager.GetCatalog("SystemIndex");
-        
-        throw new NotImplementedException(
-            "COM interop for Windows Search will be implemented during development. " +
-            "This requires ISearchCrawlScopeManager and ISearchManager interfaces."
-        );
+        var rules = new List<IndexRule>();
+
+        try
+        {
+            dynamic? searchManager = Activator.CreateInstance(Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID)!);
+            dynamic? catalog = searchManager!.GetCatalog(SYSTEM_CATALOG);
+            dynamic? scopeManager = catalog.GetCrawlScopeManager();
+
+            // Get the scope rule enumerator
+            dynamic? ruleEnumerator = scopeManager.EnumerateScopeRules();
+
+            // Enumerate all rules
+            while (true)
+            {
+                dynamic? rule = null;
+                uint fetched = 0;
+
+                // Fetch next rule
+                ruleEnumerator.Next(1, out rule, out fetched);
+
+                if (fetched == 0 || rule == null)
+                {
+                    break;
+                }
+
+                // Get rule properties
+                string url = rule?.PatternOrURL ?? string.Empty;
+                bool isIncluded = rule?.IsIncluded ?? false;
+                bool isDefault = rule?.IsDefault ?? false;
+
+                // Filter system rules if requested
+                if (!includeSystemRules && isDefault)
+                {
+                    continue;
+                }
+
+                // Create IndexRule object
+                var indexRule = new IndexRule
+                {
+                    Id = Guid.NewGuid(),
+                    Path = url,
+                    RuleType = isIncluded ? RuleType.Include : RuleType.Exclude,
+                    Recursive = true, // Windows Search rules are typically recursive
+                    Source = isDefault ? RuleSource.System : RuleSource.User,
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate = DateTime.Now,
+                    FileTypeFilters = new List<FileTypeFilter>(),
+                    ExcludedSubfolders = new List<string>()
+                };
+
+                rules.Add(indexRule);
+
+                // Release COM object
+                Marshal.ReleaseComObject(rule);
+            }
+
+            // Cleanup COM objects
+            if (ruleEnumerator != null)
+            {
+                Marshal.ReleaseComObject(ruleEnumerator);
+            }
+            if (scopeManager != null)
+            {
+                Marshal.ReleaseComObject(scopeManager);
+            }
+            if (catalog != null)
+            {
+                Marshal.ReleaseComObject(catalog);
+            }
+            if (searchManager != null)
+            {
+                Marshal.ReleaseComObject(searchManager);
+            }
+        }
+        catch (COMException)
+        {
+            throw; // Rethrow COM exceptions for proper error handling
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to enumerate scope rules: {ex.Message}", ex);
+        }
+
+        return rules;
     }
 
     /// <summary>
-    /// Gets the search crawl scope manager for managing index rules.
+    /// Adds a user-defined scope rule to Windows Search.
     /// </summary>
-    /// <returns>Dynamic object representing the crawl scope manager.</returns>
-    /// <remarks>
-    /// This method will return ISearchCrawlScopeManager from the catalog manager.
-    /// This interface provides methods like AddUserScopeRule, RemoveScopeRule, etc.
-    /// </remarks>
-    public dynamic? GetCrawlScopeManager()
+    /// <param name="rule">The rule to add.</param>
+    public void AddUserScopeRule(IndexRule rule)
     {
-        var catalog = GetSearchCatalogManager();
-        
-        // TODO: Return the ISearchCrawlScopeManager interface
-        // return catalog.GetCrawlScopeManager();
-        
-        throw new NotImplementedException(
-            "GetCrawlScopeManager will access ISearchCrawlScopeManager via COM interop."
-        );
+        try
+        {
+            dynamic? searchManager = Activator.CreateInstance(Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID)!);
+            dynamic? catalog = searchManager!.GetCatalog(SYSTEM_CATALOG);
+            dynamic? scopeManager = catalog.GetCrawlScopeManager();
+
+            // Add the rule
+            int isIncluded = rule.RuleType == RuleType.Include ? 1 : 0;
+            scopeManager.AddUserScopeRule(rule.Path, isIncluded, true, 0);
+
+            // Save changes
+            scopeManager.SaveAll();
+
+            // Cleanup COM objects
+            if (scopeManager != null)
+            {
+                Marshal.ReleaseComObject(scopeManager);
+            }
+            if (catalog != null)
+            {
+                Marshal.ReleaseComObject(catalog);
+            }
+            if (searchManager != null)
+            {
+                Marshal.ReleaseComObject(searchManager);
+            }
+        }
+        catch (COMException)
+        {
+            throw; // Rethrow COM exceptions for proper error handling
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to add scope rule: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Removes a scope rule from Windows Search.
+    /// </summary>
+    /// <param name="path">The path of the rule to remove.</param>
+    public void RemoveScopeRule(string path)
+    {
+        try
+        {
+            dynamic? searchManager = Activator.CreateInstance(Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID)!);
+            dynamic? catalog = searchManager!.GetCatalog(SYSTEM_CATALOG);
+            dynamic? scopeManager = catalog.GetCrawlScopeManager();
+
+            // Remove the rule
+            scopeManager.RemoveScopeRule(path);
+
+            // Save changes
+            scopeManager.SaveAll();
+
+            // Cleanup COM objects
+            if (scopeManager != null)
+            {
+                Marshal.ReleaseComObject(scopeManager);
+            }
+            if (catalog != null)
+            {
+                Marshal.ReleaseComObject(catalog);
+            }
+            if (searchManager != null)
+            {
+                Marshal.ReleaseComObject(searchManager);
+            }
+        }
+        catch (COMException)
+        {
+            throw; // Rethrow COM exceptions for proper error handling
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to remove scope rule: {ex.Message}", ex);
+        }
     }
 }

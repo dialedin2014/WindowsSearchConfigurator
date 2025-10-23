@@ -82,13 +82,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T042 [US1] Implement SearchIndexManager.GetAllRules() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs using COM API ISearchCrawlScopeManager.EnumerateScopeRules()
-- [ ] T043 [US1] Implement SearchIndexManager.GetExtensionSettings() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs reading from Registry HKLM\SOFTWARE\Microsoft\Windows Search\Preferences\FileTypes
-- [ ] T044 [US1] Create ListCommand handler in src/WindowsSearchConfigurator/Commands/ListCommand.cs with options for format (table/json/csv), show-defaults, and filter
-- [ ] T045 [US1] Add ListCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
-- [ ] T046 [US1] Implement table formatting for list output in ConsoleFormatter with column alignment and Unicode box-drawing
-- [ ] T047 [US1] Implement JSON formatting for list output in ConsoleFormatter using System.Text.Json
-- [ ] T048 [US1] Implement CSV formatting for list output in ConsoleFormatter following RFC 4180
+- [X] T042 [US1] Implement SearchIndexManager.GetAllRules() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs using COM API ISearchCrawlScopeManager.EnumerateScopeRules()
+- [X] T043 [US1] Implement SearchIndexManager.GetExtensionSettings() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs reading from Registry HKLM\SOFTWARE\Microsoft\Windows Search\Preferences\FileTypes
+- [X] T044 [US1] Create ListCommand handler in src/WindowsSearchConfigurator/Commands/ListCommand.cs with options for format (table/json/csv), show-defaults, and filter
+- [X] T045 [US1] Add ListCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T046 [US1] Implement table formatting for list output in ConsoleFormatter with column alignment and Unicode box-drawing
+- [X] T047 [US1] Implement JSON formatting for list output in ConsoleFormatter using System.Text.Json
+- [X] T048 [US1] Implement CSV formatting for list output in ConsoleFormatter following RFC 4180
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can view all index rules in multiple formats without admin privileges
 

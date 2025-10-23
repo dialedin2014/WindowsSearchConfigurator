@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
+using WindowsSearchConfigurator.Commands;
 using WindowsSearchConfigurator.Core.Interfaces;
-using WindowsSearchConfigurator.Services;
 using WindowsSearchConfigurator.Infrastructure;
+using WindowsSearchConfigurator.Services;
+using WindowsSearchConfigurator.Utilities;
 
 namespace WindowsSearchConfigurator;
 
@@ -15,7 +18,7 @@ public class Program
     /// </summary>
     /// <param name="args">Command-line arguments.</param>
     /// <returns>Exit code.</returns>
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         try
         {
@@ -23,24 +26,27 @@ public class Program
             var services = ConfigureServices();
             var serviceProvider = services.BuildServiceProvider();
 
-            // Display startup message
-            Console.WriteLine("Windows Search Configurator v1.0.0");
-            Console.WriteLine("Foundation established successfully.");
-            Console.WriteLine();
-            Console.WriteLine("Commands will be added in Phase 3+ (User Stories):");
-            Console.WriteLine("  - list: View current index rules");
-            Console.WriteLine("  - add: Add new index rules");
-            Console.WriteLine("  - remove: Remove index rules");
-            Console.WriteLine("  - modify: Modify existing rules");
-            Console.WriteLine("  - search-extensions: Search file extensions");
-            Console.WriteLine("  - configure-depth: Configure indexing depth");
-            Console.WriteLine("  - export: Export configuration to JSON");
-            Console.WriteLine("  - import: Import configuration from JSON");
-            Console.WriteLine();
-            Console.WriteLine("Phase 2 (Foundational) is complete!");
-            Console.WriteLine("All core models, interfaces, services, and infrastructure are ready.");
+            // Handle version option early
+            if (args.Contains("--version"))
+            {
+                Console.WriteLine("Windows Search Configurator v1.0.0");
+                Console.WriteLine("Copyright (c) 2025");
+                Console.WriteLine("Target: Windows 10/11, Windows Server 2016+");
+                Console.WriteLine($".NET Runtime: {Environment.Version}");
+                return 0;
+            }
 
-            return 0;
+            // Create root command
+            var rootCommand = new RootCommand("Windows Search Configurator - Manage Windows Search index rules");
+
+            // Register commands
+            var searchIndexManager = serviceProvider.GetRequiredService<ISearchIndexManager>();
+            var consoleFormatter = serviceProvider.GetRequiredService<ConsoleFormatter>();
+
+            rootCommand.Add(ListCommand.Create(searchIndexManager, consoleFormatter));
+
+            // Execute command
+            return await rootCommand.InvokeAsync(args);
         }
         catch (Exception ex)
         {
@@ -71,9 +77,13 @@ public class Program
         services.AddSingleton<ServiceStatusChecker>();
         services.AddSingleton<WindowsSearchInterop>();
 
-        // TODO: Register ISearchIndexManager and IConfigurationStore implementations
-        // when they are created in later phases
-        // services.AddSingleton<ISearchIndexManager, SearchIndexManager>();
+        // Register search index manager
+        services.AddSingleton<ISearchIndexManager, SearchIndexManager>();
+
+        // Register utilities
+        services.AddSingleton<ConsoleFormatter>();
+
+        // TODO: Register IConfigurationStore implementation when created
         // services.AddSingleton<IConfigurationStore, ConfigurationStore>();
 
         return services;

@@ -1,7 +1,8 @@
-namespace WindowsSearchConfigurator.Utilities;
-
 using System.Text;
 using System.Text.Json;
+using WindowsSearchConfigurator.Core.Models;
+
+namespace WindowsSearchConfigurator.Utilities;
 
 /// <summary>
 /// Provides console output formatting for table, JSON, and CSV formats.
@@ -196,5 +197,126 @@ public class ConsoleFormatter
     public static string FormatWarning(string message)
     {
         return $"⚠ {message}";
+    }
+
+    /// <summary>
+    /// Formats index rules as a table with Unicode box-drawing characters.
+    /// </summary>
+    /// <param name="rules">The rules to format.</param>
+    public void FormatRulesAsTable(IEnumerable<IndexRule> rules)
+    {
+        var rulesList = rules.ToList();
+        if (rulesList.Count == 0)
+        {
+            Console.WriteLine("No rules to display.");
+            return;
+        }
+
+        // Define columns
+        var columns = new (string, Func<IndexRule, string>)[]
+        {
+            ("Path", r => r.Path),
+            ("Type", r => r.RuleType.ToString()),
+            ("Recursive", r => r.Recursive ? "Yes" : "No"),
+            ("Filters", r => r.FileTypeFilters?.Count.ToString() ?? "0"),
+            ("Source", r => r.Source.ToString())
+        };
+
+        // Calculate column widths
+        var columnWidths = new int[columns.Length];
+        for (int i = 0; i < columns.Length; i++)
+        {
+            columnWidths[i] = columns[i].Item1.Length;
+            foreach (var rule in rulesList)
+            {
+                var value = columns[i].Item2(rule);
+                if (value != null && value.Length > columnWidths[i])
+                {
+                    columnWidths[i] = value.Length;
+                }
+            }
+        }
+
+        // Print table with Unicode box-drawing
+        var sb = new StringBuilder();
+
+        // Top border
+        sb.Append("┌");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append(new string('─', columnWidths[i] + 2));
+            sb.Append(i < columns.Length - 1 ? "┬" : "┐");
+        }
+        sb.AppendLine();
+
+        // Header row
+        sb.Append("│");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append($" {columns[i].Item1.PadRight(columnWidths[i])} │");
+        }
+        sb.AppendLine();
+
+        // Header separator
+        sb.Append("├");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append(new string('─', columnWidths[i] + 2));
+            sb.Append(i < columns.Length - 1 ? "┼" : "┤");
+        }
+        sb.AppendLine();
+
+        // Data rows
+        foreach (var rule in rulesList)
+        {
+            sb.Append("│");
+            for (int i = 0; i < columns.Length; i++)
+            {
+                var value = columns[i].Item2(rule) ?? string.Empty;
+                sb.Append($" {value.PadRight(columnWidths[i])} │");
+            }
+            sb.AppendLine();
+        }
+
+        // Bottom border
+        sb.Append("└");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append(new string('─', columnWidths[i] + 2));
+            sb.Append(i < columns.Length - 1 ? "┴" : "┘");
+        }
+        sb.AppendLine();
+
+        Console.Write(sb.ToString());
+        Console.WriteLine($"\nTotal rules: {rulesList.Count}");
+    }
+
+    /// <summary>
+    /// Formats index rules as JSON.
+    /// </summary>
+    /// <param name="rules">The rules to format.</param>
+    public void FormatRulesAsJson(IEnumerable<IndexRule> rules)
+    {
+        var json = FormatAsJson(rules, indent: true);
+        Console.WriteLine(json);
+    }
+
+    /// <summary>
+    /// Formats index rules as CSV.
+    /// </summary>
+    /// <param name="rules">The rules to format.</param>
+    public void FormatRulesAsCsv(IEnumerable<IndexRule> rules)
+    {
+        var csv = FormatAsCsv(rules,
+            ("Path", r => r.Path),
+            ("Type", r => r.RuleType.ToString()),
+            ("Recursive", r => r.Recursive ? "Yes" : "No"),
+            ("Filters", r => r.FileTypeFilters?.Count.ToString() ?? "0"),
+            ("ExcludedSubfolders", r => string.Join(";", r.ExcludedSubfolders ?? Enumerable.Empty<string>())),
+            ("Source", r => r.Source.ToString()),
+            ("CreatedDate", r => r.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")),
+            ("ModifiedDate", r => r.ModifiedDate.ToString("yyyy-MM-dd HH:mm:ss"))
+        );
+        Console.Write(csv);
     }
 }

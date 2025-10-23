@@ -1,10 +1,13 @@
-namespace WindowsSearchConfigurator.Infrastructure;
-
+using System.Runtime.Versioning;
 using Microsoft.Win32;
+using WindowsSearchConfigurator.Core.Models;
+
+namespace WindowsSearchConfigurator.Infrastructure;
 
 /// <summary>
 /// Provides Registry access operations for Windows Search configuration.
 /// </summary>
+[SupportedOSPlatform("windows")]
 public class RegistryAccessor
 {
     private const string WINDOWS_SEARCH_KEY = @"SOFTWARE\Microsoft\Windows Search";
@@ -135,5 +138,78 @@ public class RegistryAccessor
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Enumerates file type settings from the Registry.
+    /// </summary>
+    /// <param name="keyPath">The registry key path.</param>
+    /// <returns>A collection of file extension settings.</returns>
+    public IEnumerable<FileExtensionSetting> EnumerateFileTypeSettings(string keyPath)
+    {
+        var settings = new List<FileExtensionSetting>();
+
+        try
+        {
+            using var key = Registry.LocalMachine.OpenSubKey(keyPath, false);
+            if (key == null)
+            {
+                return settings;
+            }
+
+            foreach (var valueName in key.GetValueNames())
+            {
+                var value = key.GetValue(valueName);
+                if (value is int intValue && !string.IsNullOrWhiteSpace(valueName))
+                {
+                    var depth = intValue switch
+                    {
+                        0 => IndexingDepth.NotIndexed,
+                        1 => IndexingDepth.PropertiesOnly,
+                        2 => IndexingDepth.PropertiesAndContents,
+                        _ => IndexingDepth.NotIndexed
+                    };
+
+                    settings.Add(new FileExtensionSetting
+                    {
+                        Extension = valueName,
+                        IndexingDepth = depth,
+                        IsDefaultSetting = false, // Cannot determine from registry alone
+                        ModifiedDate = DateTime.Now
+                    });
+                }
+            }
+
+            return settings;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw new UnauthorizedAccessException(
+                "Access denied reading Windows Search registry. This operation may require administrator privileges."
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to enumerate file type settings: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Sets the indexing depth for a file extension.
+    /// </summary>
+    /// <param name="keyPath">The registry key path.</param>
+    /// <param name="extension">The file extension.</param>
+    /// <param name="depth">The indexing depth.</param>
+    public void SetFileTypeDepth(string keyPath, string extension, IndexingDepth depth)
+    {
+        var depthValue = depth switch
+        {
+            IndexingDepth.NotIndexed => 0,
+            IndexingDepth.PropertiesOnly => 1,
+            IndexingDepth.PropertiesAndContents => 2,
+            _ => throw new ArgumentException($"Invalid indexing depth: {depth}", nameof(depth))
+        };
+
+        WriteExtensionDepth(extension, depthValue);
     }
 }
