@@ -102,14 +102,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T049 [P] [US2] Create AddCommand handler in src/WindowsSearchConfigurator/Commands/AddCommand.cs with path argument and options (non-recursive, include, exclude-files, exclude-folders, type)
-- [ ] T050 [US2] Implement SearchIndexManager.AddIndexRule() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs using COM API ISearchCrawlScopeManager.AddUserScopeRule()
-- [ ] T051 [US2] Add privilege checking in AddCommand handler using IPrivilegeChecker before attempting modification
-- [ ] T052 [US2] Add path validation in AddCommand handler using PathValidator before adding rule
-- [ ] T053 [US2] Implement duplicate rule detection in SearchIndexManager.AddIndexRule() with user confirmation prompt
-- [ ] T054 [US2] Add audit logging in AddCommand handler using IAuditLogger after successful rule addition
-- [ ] T055 [US2] Add AddCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
-- [ ] T056 [US2] Implement error handling in AddCommand for COM exceptions (0x80040D03 for duplicate, 0x80070005 for access denied)
+- [X] T049 [P] [US2] Create AddCommand handler in src/WindowsSearchConfigurator/Commands/AddCommand.cs with path argument and options (non-recursive, include, exclude-files, exclude-folders, type)
+- [X] T050 [US2] Implement SearchIndexManager.AddIndexRule() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs using COM API ISearchCrawlScopeManager.AddUserScopeRule()
+- [X] T051 [US2] Add privilege checking in AddCommand handler using IPrivilegeChecker before attempting modification
+- [X] T052 [US2] Add path validation in AddCommand handler using PathValidator before adding rule
+- [X] T053 [US2] Implement duplicate rule detection in SearchIndexManager.AddIndexRule() with user confirmation prompt
+- [X] T054 [US2] Add audit logging in AddCommand handler using IAuditLogger after successful rule addition
+- [X] T055 [US2] Add AddCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T056 [US2] Implement error handling in AddCommand for COM exceptions (0x80040D03 for duplicate, 0x80070005 for access denied)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - users can view rules and administrators can add new rules
 
@@ -123,13 +123,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T057 [P] [US3] Create RemoveCommand handler in src/WindowsSearchConfigurator/Commands/RemoveCommand.cs with path argument and force option
-- [ ] T058 [US3] Implement SearchIndexManager.RemoveIndexRule() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs using COM API ISearchCrawlScopeManager.RemoveScopeRule()
-- [ ] T059 [US3] Add privilege checking in RemoveCommand handler using IPrivilegeChecker
-- [ ] T060 [US3] Implement confirmation prompt in RemoveCommand handler (skippable with --force or --no-confirm flags)
-- [ ] T061 [US3] Add error handling for non-existent rule (COM exception 0x80040D04) with clear message
-- [ ] T062 [US3] Add audit logging in RemoveCommand handler using IAuditLogger after successful rule removal
-- [ ] T063 [US3] Add RemoveCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T057 [P] [US3] Create RemoveCommand handler in src/WindowsSearchConfigurator/Commands/RemoveCommand.cs with path argument and force option
+- [X] T058 [US3] Implement SearchIndexManager.RemoveIndexRule() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs using COM API ISearchCrawlScopeManager.RemoveScopeRule()
+- [X] T059 [US3] Add privilege checking in RemoveCommand handler using IPrivilegeChecker
+- [X] T060 [US3] Implement confirmation prompt in RemoveCommand handler (skippable with --force or --no-confirm flags)
+- [X] T061 [US3] Add error handling for non-existent rule (COM exception 0x80040D04) with clear message
+- [X] T062 [US3] Add audit logging in RemoveCommand handler using IAuditLogger after successful rule removal
+- [X] T063 [US3] Add RemoveCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
 
 **Checkpoint**: All basic CRUD operations now functional - users can view, add, and remove index rules
 
@@ -143,13 +143,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T064 [P] [US4] Create ModifyCommand handler in src/WindowsSearchConfigurator/Commands/ModifyCommand.cs with path argument and options (recursive, include, exclude-files, exclude-folders, type)
-- [ ] T065 [US4] Implement SearchIndexManager.ModifyIndexRule() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs (remove old rule, add updated rule atomically)
-- [ ] T066 [US4] Add privilege checking in ModifyCommand handler using IPrivilegeChecker
-- [ ] T067 [US4] Implement rule existence check in ModifyCommand with helpful error message if rule not found
-- [ ] T068 [US4] Add confirmation prompt in ModifyCommand handler for destructive changes
-- [ ] T069 [US4] Add audit logging in ModifyCommand handler using IAuditLogger after successful modification
-- [ ] T070 [US4] Add ModifyCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T064 [P] [US4] Create ModifyCommand handler in src/WindowsSearchConfigurator/Commands/ModifyCommand.cs with path argument and options (recursive, include, exclude-files, exclude-folders, type)
+- [X] T065 [US4] Implement SearchIndexManager.ModifyIndexRule() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs (remove old rule, add updated rule atomically)
+- [X] T066 [US4] Add privilege checking in ModifyCommand handler using IPrivilegeChecker
+- [X] T067 [US4] Implement rule existence check in ModifyCommand with helpful error message if rule not found
+- [X] T068 [US4] Add confirmation prompt in ModifyCommand handler for destructive changes
+- [X] T069 [US4] Add audit logging in ModifyCommand handler using IAuditLogger after successful modification
+- [X] T070 [US4] Add ModifyCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
 
 **Checkpoint**: Full CRUD operations complete - users can view, add, remove, and modify index rules
 
@@ -163,15 +163,15 @@
 
 ### Implementation for User Story 5
 
-- [ ] T071 [P] [US5] Create SearchExtensionsCommand handler in src/WindowsSearchConfigurator/Commands/SearchExtensionsCommand.cs with pattern argument and format/depth filter options
-- [ ] T072 [P] [US5] Create ConfigureDepthCommand handler in src/WindowsSearchConfigurator/Commands/ConfigureDepthCommand.cs with extension and depth arguments
-- [ ] T073 [US5] Implement SearchIndexManager.SearchExtensions() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs enumerating Registry FileTypes key with wildcard matching
-- [ ] T074 [US5] Implement SearchIndexManager.SetExtensionDepth() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs writing DWORD to Registry (0=NotIndexed, 1=PropertiesOnly, 2=PropertiesAndContents)
-- [ ] T075 [US5] Add privilege checking in ConfigureDepthCommand handler using IPrivilegeChecker
-- [ ] T076 [US5] Implement wildcard pattern conversion in WildcardMatcher utility (*.log, *.*x patterns to regex)
-- [ ] T077 [US5] Add audit logging in ConfigureDepthCommand handler using IAuditLogger after successful depth change
-- [ ] T078 [US5] Add SearchExtensionsCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
-- [ ] T079 [US5] Add ConfigureDepthCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T071 [P] [US5] Create SearchExtensionsCommand handler in src/WindowsSearchConfigurator/Commands/SearchExtensionsCommand.cs with pattern argument and format/depth filter options
+- [X] T072 [P] [US5] Create ConfigureDepthCommand handler in src/WindowsSearchConfigurator/Commands/ConfigureDepthCommand.cs with extension and depth arguments
+- [X] T073 [US5] Implement SearchIndexManager.SearchExtensions() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs enumerating Registry FileTypes key with wildcard matching
+- [X] T074 [US5] Implement SearchIndexManager.SetExtensionDepth() in src/WindowsSearchConfigurator/Services/SearchIndexManager.cs writing DWORD to Registry (0=NotIndexed, 1=PropertiesOnly, 2=PropertiesAndContents)
+- [X] T075 [US5] Add privilege checking in ConfigureDepthCommand handler using IPrivilegeChecker
+- [X] T076 [US5] Implement wildcard pattern conversion in WildcardMatcher utility (*.log, *.*x patterns to regex)
+- [X] T077 [US5] Add audit logging in ConfigureDepthCommand handler using IAuditLogger after successful depth change
+- [X] T078 [US5] Add SearchExtensionsCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T079 [US5] Add ConfigureDepthCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
 
 **Checkpoint**: Extension management complete - users can search and configure file extension indexing behavior
 
@@ -185,18 +185,18 @@
 
 ### Implementation for User Story 6
 
-- [ ] T080 [P] [US6] Create ExportCommand handler in src/WindowsSearchConfigurator/Commands/ExportCommand.cs with file argument and options (include-defaults, include-extensions, overwrite)
-- [ ] T081 [P] [US6] Create ImportCommand handler in src/WindowsSearchConfigurator/Commands/ImportCommand.cs with file argument and options (merge, continue-on-error, dry-run)
-- [ ] T082 [US6] Implement ConfigurationStore.Export() in src/WindowsSearchConfigurator/Services/ConfigurationStore.cs serializing rules and extensions to JSON with System.Text.Json
-- [ ] T083 [US6] Implement ConfigurationStore.Import() in src/WindowsSearchConfigurator/Services/ConfigurationStore.cs deserializing JSON with schema validation
-- [ ] T084 [US6] Add JSON schema validation in ConfigurationStore.Import() checking version compatibility and required fields
-- [ ] T085 [US6] Implement batch rule application in ImportCommand with error handling and reporting (success/failure per rule)
-- [ ] T086 [US6] Add privilege checking in ImportCommand handler using IPrivilegeChecker (read-only export, admin for import)
-- [ ] T087 [US6] Implement merge logic in ImportCommand to combine with existing rules instead of replacing
-- [ ] T088 [US6] Implement dry-run mode in ImportCommand to validate without applying changes
-- [ ] T089 [US6] Add audit logging in ExportCommand and ImportCommand handlers using IAuditLogger
-- [ ] T090 [US6] Add ExportCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
-- [ ] T091 [US6] Add ImportCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T080 [P] [US6] Create ExportCommand handler in src/WindowsSearchConfigurator/Commands/ExportCommand.cs with file argument and options (include-defaults, include-extensions, overwrite)
+- [X] T081 [P] [US6] Create ImportCommand handler in src/WindowsSearchConfigurator/Commands/ImportCommand.cs with file argument and options (merge, continue-on-error, dry-run)
+- [X] T082 [US6] Implement ConfigurationStore.Export() in src/WindowsSearchConfigurator/Services/ConfigurationStore.cs serializing rules and extensions to JSON with System.Text.Json
+- [X] T083 [US6] Implement ConfigurationStore.Import() in src/WindowsSearchConfigurator/Services/ConfigurationStore.cs deserializing JSON with schema validation
+- [X] T084 [US6] Add JSON schema validation in ConfigurationStore.Import() checking version compatibility and required fields
+- [X] T085 [US6] Implement batch rule application in ImportCommand with error handling and reporting (success/failure per rule)
+- [X] T086 [US6] Add privilege checking in ImportCommand handler using IPrivilegeChecker (read-only export, admin for import)
+- [X] T087 [US6] Implement merge logic in ImportCommand to combine with existing rules instead of replacing
+- [X] T088 [US6] Implement dry-run mode in ImportCommand to validate without applying changes
+- [X] T089 [US6] Add audit logging in ExportCommand and ImportCommand handlers using IAuditLogger
+- [X] T090 [US6] Add ExportCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
+- [X] T091 [US6] Add ImportCommand to root command configuration in src/WindowsSearchConfigurator/Program.cs
 
 **Checkpoint**: All user stories complete - full feature functionality delivered
 
@@ -206,15 +206,15 @@
 
 **Purpose**: Improvements that affect multiple user stories and final documentation
 
-- [ ] T092 [P] Add XML documentation comments to all public interfaces in src/WindowsSearchConfigurator/Core/Interfaces/
-- [ ] T093 [P] Add XML documentation comments to all public models in src/WindowsSearchConfigurator/Core/Models/
+- [X] T092 [P] Add XML documentation comments to all public interfaces in src/WindowsSearchConfigurator/Core/Interfaces/
+- [X] T093 [P] Add XML documentation comments to all public models in src/WindowsSearchConfigurator/Core/Models/
 - [ ] T094 [P] Implement --verbose flag support in Program.cs for detailed diagnostic output
-- [ ] T095 [P] Implement --version flag handler in Program.cs displaying version, copyright, runtime info
-- [ ] T096 [P] Add comprehensive error message templates with suggested actions in all command handlers
-- [ ] T097 [P] Create README.md at repository root with project overview and quick start
-- [ ] T098 [P] Verify all exit codes (0-5) are properly returned from command handlers per CLI contract
-- [ ] T099 [P] Add progress indicators for long-running operations (batch import) in ImportCommand
-- [ ] T100 [P] Validate all confirmation prompts follow consistent format with clear warnings
+- [X] T095 [P] Implement --version flag handler in Program.cs displaying version, copyright, runtime info
+- [X] T096 [P] Add comprehensive error message templates with suggested actions in all command handlers
+- [X] T097 [P] Create README.md at repository root with project overview and quick start
+- [X] T098 [P] Verify all exit codes (0-5) are properly returned from command handlers per CLI contract
+- [X] T099 [P] Add progress indicators for long-running operations (batch import) in ImportCommand
+- [X] T100 [P] Validate all confirmation prompts follow consistent format with clear warnings
 ### T10: User Acceptance Testing (UAT)
 
 - [ ] T101 Run through all scenarios in specs/001-windows-search-configurator/quickstart.md and verify functionality

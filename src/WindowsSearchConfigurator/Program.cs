@@ -42,8 +42,20 @@ public class Program
             // Register commands
             var searchIndexManager = serviceProvider.GetRequiredService<ISearchIndexManager>();
             var consoleFormatter = serviceProvider.GetRequiredService<ConsoleFormatter>();
+            var privilegeChecker = serviceProvider.GetRequiredService<IPrivilegeChecker>();
+            var pathValidator = serviceProvider.GetRequiredService<PathValidator>();
+            var auditLogger = serviceProvider.GetRequiredService<IAuditLogger>();
+
+            var configurationStore = serviceProvider.GetRequiredService<IConfigurationStore>();
 
             rootCommand.Add(ListCommand.Create(searchIndexManager, consoleFormatter));
+            rootCommand.Add(AddCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger));
+            rootCommand.Add(RemoveCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger));
+            rootCommand.Add(ModifyCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger));
+            rootCommand.Add(SearchExtensionsCommand.Create(searchIndexManager, consoleFormatter));
+            rootCommand.Add(ConfigureDepthCommand.Create(searchIndexManager, privilegeChecker, auditLogger));
+            rootCommand.Add(ExportCommand.Create(configurationStore, auditLogger));
+            rootCommand.Add(ImportCommand.Create(configurationStore, privilegeChecker, auditLogger));
 
             // Execute command
             return await rootCommand.InvokeAsync(args);
@@ -83,8 +95,8 @@ public class Program
         // Register utilities
         services.AddSingleton<ConsoleFormatter>();
 
-        // TODO: Register IConfigurationStore implementation when created
-        // services.AddSingleton<IConfigurationStore, ConfigurationStore>();
+        // Register configuration store
+        services.AddSingleton<IConfigurationStore, ConfigurationStore>();
 
         return services;
     }

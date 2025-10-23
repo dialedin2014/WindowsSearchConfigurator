@@ -319,4 +319,120 @@ public class ConsoleFormatter
         );
         Console.Write(csv);
     }
+
+    /// <summary>
+    /// Formats file extension settings as a table with Unicode box-drawing characters.
+    /// </summary>
+    /// <param name="extensions">The extension settings to format.</param>
+    public void FormatExtensionsAsTable(IEnumerable<FileExtensionSetting> extensions)
+    {
+        var extensionsList = extensions.ToList();
+        if (extensionsList.Count == 0)
+        {
+            Console.WriteLine("No extensions to display.");
+            return;
+        }
+
+        // Define columns
+        var columns = new (string, Func<FileExtensionSetting, string>)[]
+        {
+            ("Extension", e => e.Extension),
+            ("Indexing Depth", e => e.IndexingDepth.ToString()),
+            ("Default", e => e.IsDefaultSetting ? "Yes" : "No"),
+            ("Modified", e => e.ModifiedDate.ToString("yyyy-MM-dd HH:mm"))
+        };
+
+        // Calculate column widths
+        var columnWidths = new int[columns.Length];
+        for (int i = 0; i < columns.Length; i++)
+        {
+            columnWidths[i] = columns[i].Item1.Length;
+            foreach (var ext in extensionsList)
+            {
+                var value = columns[i].Item2(ext);
+                if (value != null && value.Length > columnWidths[i])
+                {
+                    columnWidths[i] = value.Length;
+                }
+            }
+        }
+
+        // Print table with Unicode box-drawing
+        var sb = new StringBuilder();
+
+        // Top border
+        sb.Append("┌");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append(new string('─', columnWidths[i] + 2));
+            sb.Append(i < columns.Length - 1 ? "┬" : "┐");
+        }
+        sb.AppendLine();
+
+        // Header row
+        sb.Append("│");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append($" {columns[i].Item1.PadRight(columnWidths[i])} │");
+        }
+        sb.AppendLine();
+
+        // Header separator
+        sb.Append("├");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append(new string('─', columnWidths[i] + 2));
+            sb.Append(i < columns.Length - 1 ? "┼" : "┤");
+        }
+        sb.AppendLine();
+
+        // Data rows
+        foreach (var ext in extensionsList)
+        {
+            sb.Append("│");
+            for (int i = 0; i < columns.Length; i++)
+            {
+                var value = columns[i].Item2(ext) ?? string.Empty;
+                sb.Append($" {value.PadRight(columnWidths[i])} │");
+            }
+            sb.AppendLine();
+        }
+
+        // Bottom border
+        sb.Append("└");
+        for (int i = 0; i < columns.Length; i++)
+        {
+            sb.Append(new string('─', columnWidths[i] + 2));
+            sb.Append(i < columns.Length - 1 ? "┴" : "┘");
+        }
+        sb.AppendLine();
+
+        Console.Write(sb.ToString());
+        Console.WriteLine($"\nTotal extensions: {extensionsList.Count}");
+    }
+
+    /// <summary>
+    /// Formats file extension settings as JSON.
+    /// </summary>
+    /// <param name="extensions">The extension settings to format.</param>
+    public void FormatExtensionsAsJson(IEnumerable<FileExtensionSetting> extensions)
+    {
+        var json = FormatAsJson(extensions, indent: true);
+        Console.WriteLine(json);
+    }
+
+    /// <summary>
+    /// Formats file extension settings as CSV.
+    /// </summary>
+    /// <param name="extensions">The extension settings to format.</param>
+    public void FormatExtensionsAsCsv(IEnumerable<FileExtensionSetting> extensions)
+    {
+        var csv = FormatAsCsv(extensions,
+            ("Extension", e => e.Extension),
+            ("IndexingDepth", e => e.IndexingDepth.ToString()),
+            ("IsDefault", e => e.IsDefaultSetting ? "Yes" : "No"),
+            ("ModifiedDate", e => e.ModifiedDate.ToString("yyyy-MM-dd HH:mm:ss"))
+        );
+        Console.Write(csv);
+    }
 }
