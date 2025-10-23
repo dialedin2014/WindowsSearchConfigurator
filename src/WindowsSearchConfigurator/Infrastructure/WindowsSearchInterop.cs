@@ -41,6 +41,51 @@ public class WindowsSearchInterop
     }
 
     /// <summary>
+    /// Validates that the Windows Search COM API is functional by attempting instantiation.
+    /// </summary>
+    /// <returns>The validation state of the COM API.</returns>
+    public COMValidationState ValidateCOMRegistration()
+    {
+        try
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return COMValidationState.UnknownError;
+            }
+
+            // Try to get the COM type
+            var type = Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID);
+            if (type == null)
+            {
+                return COMValidationState.CLSIDNotFound;
+            }
+
+            // Try to instantiate the COM object
+            var searchManager = Activator.CreateInstance(type);
+            if (searchManager == null)
+            {
+                return COMValidationState.InstantiationFailed;
+            }
+
+            // Clean up COM object
+            if (Marshal.IsComObject(searchManager))
+            {
+                Marshal.ReleaseComObject(searchManager);
+            }
+
+            return COMValidationState.Valid;
+        }
+        catch (COMException)
+        {
+            return COMValidationState.COMException;
+        }
+        catch
+        {
+            return COMValidationState.UnknownError;
+        }
+    }
+
+    /// <summary>
     /// Enumerates all scope rules from Windows Search.
     /// </summary>
     /// <param name="includeSystemRules">Whether to include system default rules.</param>

@@ -435,4 +435,242 @@ public class ConsoleFormatter
         );
         Console.Write(csv);
     }
+
+    /// <summary>
+    /// Displays an error message when COM API is not registered.
+    /// </summary>
+    /// <param name="status">The COM registration status.</param>
+    public static void ShowCOMNotRegisteredError(COMRegistrationStatus status)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR: Microsoft Windows Search COM API is not registered.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("The Windows Search Configurator requires this API to function. The COM API is typically");
+        Console.WriteLine("installed with Windows Search but may not be registered on this system.");
+        Console.WriteLine();
+        
+        // Provide specific details based on status
+        if (!status.CLSIDExists)
+        {
+            Console.WriteLine("Details: CLSID not found in registry.");
+        }
+        else if (!status.DLLExists)
+        {
+            Console.WriteLine($"Details: DLL not found at path: {status.DLLPath}");
+        }
+        else if (status.ValidationState != COMValidationState.Valid)
+        {
+            Console.WriteLine($"Details: COM object validation failed ({status.ValidationState}).");
+        }
+
+        if (!string.IsNullOrEmpty(status.ErrorMessage))
+        {
+            Console.WriteLine($"Error: {status.ErrorMessage}");
+        }
+    }
+
+    /// <summary>
+    /// Displays COM registration success message.
+    /// </summary>
+    public static void ShowCOMRegistrationSuccess()
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("SUCCESS: COM API registered successfully.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("Validating registration...");
+    }
+
+    /// <summary>
+    /// Displays COM validation success message.
+    /// </summary>
+    public static void ShowCOMValidationSuccess()
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("SUCCESS: COM API is functional.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("Continuing with your command...");
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays COM registration error message after a failed attempt.
+    /// </summary>
+    /// <param name="attempt">The failed registration attempt.</param>
+    public static void ShowCOMRegistrationError(COMRegistrationAttempt attempt)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"ERROR: COM registration failed ({attempt.Outcome})");
+        Console.ResetColor();
+        Console.WriteLine();
+
+        if (!string.IsNullOrEmpty(attempt.ErrorMessage))
+        {
+            Console.WriteLine($"Details: {attempt.ErrorMessage}");
+            Console.WriteLine();
+        }
+
+        if (attempt.ExitCode.HasValue && attempt.ExitCode != 0)
+        {
+            Console.WriteLine($"Exit Code: {attempt.ExitCode}");
+            Console.WriteLine();
+        }
+
+        // Provide troubleshooting guidance based on outcome
+        Console.WriteLine("Troubleshooting:");
+        switch (attempt.Outcome)
+        {
+            case RegistrationOutcome.InsufficientPrivileges:
+                Console.WriteLine("- Run this tool as Administrator (right-click → Run as Administrator)");
+                Console.WriteLine("- Or use manual registration with an elevated Command Prompt");
+                break;
+
+            case RegistrationOutcome.DLLNotFound:
+                Console.WriteLine("- Verify Windows Search is installed");
+                Console.WriteLine("- Check if SearchAPI.dll exists in System32");
+                Console.WriteLine("- Re-install Windows Search feature if necessary");
+                break;
+
+            case RegistrationOutcome.Timeout:
+                Console.WriteLine("- Try manual registration with regsvr32");
+                Console.WriteLine("- Check if Windows Search service is running");
+                break;
+
+            case RegistrationOutcome.ValidationFailed:
+                Console.WriteLine("- Registration command completed but COM object cannot be instantiated");
+                Console.WriteLine("- Try restarting the Windows Search service");
+                Console.WriteLine("- Try manual registration with regsvr32");
+                break;
+
+            default:
+                Console.WriteLine("- Try manual registration (see manual instructions)");
+                Console.WriteLine("- Check Windows Event Viewer for additional details");
+                break;
+        }
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Writes colored text to the console.
+    /// </summary>
+    /// <param name="text">The text to write.</param>
+    /// <param name="color">The console color to use.</param>
+    public static void WriteColored(string text, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        Console.WriteLine(text);
+        Console.ResetColor();
+    }
+
+    /// <summary>
+    /// Prompts the user to choose whether to register the COM API.
+    /// </summary>
+    /// <returns>The user's choice: 'Y', 'N', or 'Q'.</returns>
+    public static char PromptCOMRegistration()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Would you like to attempt automatic registration? (requires administrative privileges)");
+        Console.WriteLine();
+        Console.WriteLine("Options:");
+        Console.WriteLine("  [Y] Yes - Attempt automatic registration now");
+        Console.WriteLine("  [N] No  - Show manual registration instructions");
+        Console.WriteLine("  [Q] Quit - Exit without registering");
+        Console.WriteLine();
+
+        while (true)
+        {
+            Console.Write("Enter your choice (Y/N/Q): ");
+            var input = Console.ReadLine()?.Trim().ToUpperInvariant();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("Invalid choice. Please enter Y, N, or Q.");
+                Console.WriteLine();
+                continue;
+            }
+
+            var choice = input[0];
+            if (choice == 'Y' || choice == 'N' || choice == 'Q')
+            {
+                return choice;
+            }
+
+            Console.WriteLine("Invalid choice. Please enter Y, N, or Q.");
+            Console.WriteLine();
+        }
+    }
+
+    /// <summary>
+    /// Displays manual COM registration instructions.
+    /// </summary>
+    public static void ShowManualCOMRegistrationInstructions()
+    {
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Manual COM API Registration Instructions:");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("To register the COM API manually:");
+        Console.WriteLine();
+        Console.WriteLine("  1. Open Command Prompt as Administrator:");
+        Console.WriteLine("     - Press Win + X");
+        Console.WriteLine("     - Select 'Command Prompt (Admin)' or 'Windows PowerShell (Admin)'");
+        Console.WriteLine();
+        Console.WriteLine("  2. Run the following command:");
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("     regsvr32 \"%SystemRoot%\\System32\\SearchAPI.dll\"");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("  3. Wait for confirmation message");
+        Console.WriteLine();
+        Console.WriteLine("  4. Run WindowsSearchConfigurator again");
+        Console.WriteLine();
+        Console.WriteLine("If registration fails, verify:");
+        Console.WriteLine("  - Windows Search is installed");
+        Console.WriteLine("  - SearchAPI.dll exists in System32 folder");
+        Console.WriteLine("  - You have administrator privileges");
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays elevation instructions when user lacks admin privileges.
+    /// </summary>
+    public static void ShowElevationInstructions()
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("ERROR: Administrative privileges required for COM API registration.");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("To register the COM API, you must run WindowsSearchConfigurator as Administrator.");
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("How to run as Administrator:");
+        Console.ResetColor();
+        Console.WriteLine("  1. Right-click on WindowsSearchConfigurator.exe");
+        Console.WriteLine("  2. Select \"Run as administrator\"");
+        Console.WriteLine("  3. Try your command again");
+        Console.WriteLine();
+        Console.WriteLine("Or use this command in an elevated prompt:");
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("  WindowsSearchConfigurator.exe [your command]");
+        Console.ResetColor();
+        Console.WriteLine();
+        Console.WriteLine("Alternatively, you can register manually:");
+        Console.WriteLine("  1. Open Command Prompt as Administrator");
+        Console.WriteLine("  2. Run: regsvr32 \"%SystemRoot%\\System32\\SearchAPI.dll\"");
+        Console.WriteLine("  3. Run WindowsSearchConfigurator again");
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Displays a message indicating registration is in progress.
+    /// </summary>
+    public static void ShowCOMRegistrationInProgress()
+    {
+        Console.WriteLine();
+        Console.WriteLine("Registering COM API...");
+    }
 }
