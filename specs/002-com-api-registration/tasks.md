@@ -142,12 +142,12 @@ Phase 6 (Polish & Integration Testing)
 
 ### Phase 4a: Registration Service Core (4 files)
 
-- [ ] T027 [US2] Create COMRegistrationService in src/WindowsSearchConfigurator/Services/COMRegistrationService.cs with registration logic
-- [ ] T028 [US2] Create unit tests for COMRegistrationService in tests/WindowsSearchConfigurator.UnitTests/Services/COMRegistrationServiceTests.cs
-- [ ] T029 [US2] Add interactive prompt to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
-- [ ] T030 [US2] Add manual instructions display to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
-- [ ] T031 [US2] Run unit tests for registration service: `dotnet test --filter "FullyQualifiedName~COMRegistrationService"`
-- [ ] T032 [US2] Commit US2 core: `git commit -m "feat(com): Add registration service and interactive prompts (US2)"`
+- [x] T027 [US2] Create COMRegistrationService in src/WindowsSearchConfigurator/Services/COMRegistrationService.cs with registration logic
+- [x] T028 [US2] Create unit tests for COMRegistrationService in tests/WindowsSearchConfigurator.UnitTests/Services/COMRegistrationServiceTests.cs
+- [x] T029 [US2] Add interactive prompt to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
+- [x] T030 [US2] Add manual instructions display to ConsoleFormatter in src/WindowsSearchConfigurator/Utilities/ConsoleFormatter.cs
+- [x] T031 [US2] Run unit tests for registration service: `dotnet test --filter "FullyQualifiedName~COMRegistrationService"`
+- [x] T032 [US2] Commit US2 core: `git commit -m "feat(com): Add registration service and interactive prompts (US2)"`
 
 ### Phase 4b: Privilege Checking Integration (2 files)
 

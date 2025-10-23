@@ -494,4 +494,73 @@ public class ConsoleFormatter
         Console.WriteLine("Continuing with your command...");
         Console.WriteLine();
     }
+
+    /// <summary>
+    /// Displays COM registration error message after a failed attempt.
+    /// </summary>
+    /// <param name="attempt">The failed registration attempt.</param>
+    public static void ShowCOMRegistrationError(COMRegistrationAttempt attempt)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"ERROR: COM registration failed ({attempt.Outcome})");
+        Console.ResetColor();
+        Console.WriteLine();
+
+        if (!string.IsNullOrEmpty(attempt.ErrorMessage))
+        {
+            Console.WriteLine($"Details: {attempt.ErrorMessage}");
+            Console.WriteLine();
+        }
+
+        if (attempt.ExitCode.HasValue && attempt.ExitCode != 0)
+        {
+            Console.WriteLine($"Exit Code: {attempt.ExitCode}");
+            Console.WriteLine();
+        }
+
+        // Provide troubleshooting guidance based on outcome
+        Console.WriteLine("Troubleshooting:");
+        switch (attempt.Outcome)
+        {
+            case RegistrationOutcome.InsufficientPrivileges:
+                Console.WriteLine("- Run this tool as Administrator (right-click → Run as Administrator)");
+                Console.WriteLine("- Or use manual registration with an elevated Command Prompt");
+                break;
+
+            case RegistrationOutcome.DLLNotFound:
+                Console.WriteLine("- Verify Windows Search is installed");
+                Console.WriteLine("- Check if SearchAPI.dll exists in System32");
+                Console.WriteLine("- Re-install Windows Search feature if necessary");
+                break;
+
+            case RegistrationOutcome.Timeout:
+                Console.WriteLine("- Try manual registration with regsvr32");
+                Console.WriteLine("- Check if Windows Search service is running");
+                break;
+
+            case RegistrationOutcome.ValidationFailed:
+                Console.WriteLine("- Registration command completed but COM object cannot be instantiated");
+                Console.WriteLine("- Try restarting the Windows Search service");
+                Console.WriteLine("- Try manual registration with regsvr32");
+                break;
+
+            default:
+                Console.WriteLine("- Try manual registration (see manual instructions)");
+                Console.WriteLine("- Check Windows Event Viewer for additional details");
+                break;
+        }
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// Writes colored text to the console.
+    /// </summary>
+    /// <param name="text">The text to write.</param>
+    /// <param name="color">The console color to use.</param>
+    public static void WriteColored(string text, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        Console.WriteLine(text);
+        Console.ResetColor();
+    }
 }

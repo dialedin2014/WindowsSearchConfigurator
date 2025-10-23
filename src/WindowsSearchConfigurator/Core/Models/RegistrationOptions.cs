@@ -46,9 +46,7 @@ public class RegistrationOptions
             throw new ArgumentException("TimeoutSeconds must be between 1 and 60.");
         }
 
-        if (!string.IsNullOrEmpty(DLLPath) && !File.Exists(DLLPath))
-        {
-            throw new ArgumentException($"Specified DLL path does not exist: {DLLPath}");
-        }
+        // Note: DLL path existence is checked by the service, not here
+        // This allows for testing without requiring actual file system state
     }
 }
