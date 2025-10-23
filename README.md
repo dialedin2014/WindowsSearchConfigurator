@@ -328,6 +328,55 @@ The export/import feature uses JSON format:
 
 ## Troubleshooting
 
+### "Microsoft Windows Search COM API is not registered"
+
+The tool requires the Windows Search COM API to be registered. This error appears when the API is not properly registered on your system.
+
+**Automatic Registration (Recommended)**:
+
+```powershell
+# Interactive mode - prompts for confirmation
+WindowsSearchConfigurator.exe list
+
+# Automatic mode - no prompt (requires admin)
+WindowsSearchConfigurator.exe --auto-register-com list
+```
+
+**Manual Registration**:
+
+1. Open Command Prompt as Administrator
+2. Run the following command:
+
+```powershell
+regsvr32 "%SystemRoot%\System32\SearchAPI.dll"
+```
+
+3. Restart WindowsSearchConfigurator
+
+**CI/CD Environments**:
+
+Use the `--auto-register-com` flag to automatically register without prompts, or `--no-register-com` to fail immediately if not registered:
+
+```powershell
+# Auto-register if needed (requires admin)
+WindowsSearchConfigurator.exe --auto-register-com export --output config.json
+
+# Fail-fast if not registered (pre-check)
+WindowsSearchConfigurator.exe --no-register-com list
+```
+
+**Common Causes**:
+- Windows Search not installed or disabled
+- SearchAPI.dll missing or corrupted
+- Registry keys missing or damaged
+- Recent Windows updates that affected Windows Search
+
+**Resolution Steps**:
+1. Verify Windows Search is installed: `Get-Service WSearch`
+2. Check if SearchAPI.dll exists: `Test-Path "$env:SystemRoot\System32\SearchAPI.dll"`
+3. Try manual registration (above)
+4. If problem persists, repair or reinstall Windows Search
+
 ### "Windows Search service is not running"
 
 Start the Windows Search service:

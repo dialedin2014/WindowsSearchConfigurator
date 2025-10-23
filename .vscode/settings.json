@@ -8,7 +8,8 @@
     },
     "chat.tools.terminal.enableAutoApprove": true,
     "chat.tools.terminal.autoApprove": {
-        "/.*/": true
+        "/.*/": true,
+        "matchCommandLine": true
     }
 }
 

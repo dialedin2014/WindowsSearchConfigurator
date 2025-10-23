@@ -199,7 +199,7 @@ Phase 6 (Polish & Integration Testing)
 - [ ] T047 [US4] Manual test: Run with `--no-register-com` (COM not registered) → verify immediate exit with error
 - [ ] T048 [US4] Manual test: Run with both flags → verify conflict error (exit code 3)
 - [ ] T049 [US4] Manual test: Run with `--auto-register-com` (as standard user) → verify elevation error (exit code 2)
-- [ ] T050 [US4] Commit US4 implementation: `git commit -m "feat(com): Add non-interactive mode flags (US4)"`
+- [x] T050 [US4] Commit US4 implementation: `git commit -m "feat(com): Add non-interactive mode flags (US4)"`
 
 **Acceptance Criteria**:
 - ✅ --auto-register-com flag recognized and processed
@@ -221,11 +221,11 @@ Phase 6 (Polish & Integration Testing)
 
 ### Tasks
 
-- [ ] T051 Create integration tests in tests/WindowsSearchConfigurator.IntegrationTests/COMRegistrationIntegrationTests.cs
-- [ ] T052 Add COM troubleshooting section to README.md
-- [ ] T053 Update CHANGELOG.md with COM registration feature
-- [ ] T054 Add AuditLogger integration for all COM events in src/WindowsSearchConfigurator/Services/COMRegistrationService.cs
-- [ ] T055 Run full test suite: `dotnet test`
+- [x] T051 Create integration tests in tests/WindowsSearchConfigurator.IntegrationTests/COMRegistrationIntegrationTests.cs
+- [x] T052 Add COM troubleshooting section to README.md
+- [x] T053 Update CHANGELOG.md with COM registration feature
+- [x] T054 Add AuditLogger integration for all COM events in src/WindowsSearchConfigurator/Services/COMRegistrationService.cs
+- [x] T055 Run full test suite: `dotnet test`
 - [ ] T056 Run integration tests (as admin): `dotnet test --filter "FullyQualifiedName~IntegrationTests"`
 - [ ] T057 Verify all FR requirements implemented (FR-001 through FR-012)
 - [ ] T058 Verify all SC criteria met (SC-001 through SC-006)

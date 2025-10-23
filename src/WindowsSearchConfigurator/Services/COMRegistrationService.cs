@@ -17,6 +17,7 @@ public class COMRegistrationService : ICOMRegistrationService
     private readonly ICOMRegistrationDetector _detector;
     private readonly IPrivilegeChecker _privilegeChecker;
     private readonly VerboseLogger _verboseLogger;
+    private readonly IAuditLogger? _auditLogger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="COMRegistrationService"/> class.
@@ -24,14 +25,17 @@ public class COMRegistrationService : ICOMRegistrationService
     /// <param name="detector">The COM registration detector.</param>
     /// <param name="privilegeChecker">The privilege checker.</param>
     /// <param name="verboseLogger">The verbose logger.</param>
+    /// <param name="auditLogger">The audit logger (optional).</param>
     public COMRegistrationService(
         ICOMRegistrationDetector detector,
         IPrivilegeChecker privilegeChecker,
-        VerboseLogger verboseLogger)
+        VerboseLogger verboseLogger,
+        IAuditLogger? auditLogger = null)
     {
         _detector = detector ?? throw new ArgumentNullException(nameof(detector));
         _privilegeChecker = privilegeChecker ?? throw new ArgumentNullException(nameof(privilegeChecker));
         _verboseLogger = verboseLogger ?? throw new ArgumentNullException(nameof(verboseLogger));
+        _auditLogger = auditLogger;
     }
 
     /// <inheritdoc/>
@@ -125,6 +129,9 @@ public class COMRegistrationService : ICOMRegistrationService
 
             _verboseLogger.WriteLine($"Registration attempt completed: {attempt.Outcome} ({attempt.DurationMs}ms)");
 
+            // FR-012: Log registration attempt to audit logger
+            LogRegistrationAttempt(attempt);
+
             return attempt;
         }
         catch (Exception ex)
@@ -134,6 +141,10 @@ public class COMRegistrationService : ICOMRegistrationService
             attempt.Outcome = RegistrationOutcome.Failed;
             attempt.ErrorMessage = $"Unexpected error: {ex.Message}";
             _verboseLogger.WriteLine($"Registration failed with exception: {ex}");
+            
+            // FR-012: Log failed registration attempt
+            LogRegistrationAttempt(attempt);
+            
             return attempt;
         }
     }
@@ -387,5 +398,55 @@ public class COMRegistrationService : ICOMRegistrationService
         }
 
         return (process.ExitCode, errorOutput);
+    }
+
+    /// <summary>
+    /// Logs a COM registration attempt to the audit logger.
+    /// </summary>
+    /// <param name="attempt">The registration attempt to log.</param>
+    private void LogRegistrationAttempt(COMRegistrationAttempt attempt)
+    {
+        if (_auditLogger == null)
+        {
+            return;
+        }
+
+        var details = $"Mode: {attempt.Mode}, Outcome: {attempt.Outcome}, Duration: {attempt.DurationMs}ms, " +
+                     $"User: {attempt.User}, IsAdmin: {attempt.IsAdministrator}, DLL: {attempt.DLLPath}";
+
+        switch (attempt.Outcome)
+        {
+            case RegistrationOutcome.Success:
+                _auditLogger.LogInfo($"COM API registration succeeded (AttemptId: {attempt.AttemptId})", details);
+                break;
+
+            case RegistrationOutcome.Failed:
+                _auditLogger.LogError($"COM API registration failed (AttemptId: {attempt.AttemptId}): {attempt.ErrorMessage}", null);
+                break;
+
+            case RegistrationOutcome.Timeout:
+                _auditLogger.LogWarning($"COM API registration timed out (AttemptId: {attempt.AttemptId})", details);
+                break;
+
+            case RegistrationOutcome.InsufficientPrivileges:
+                _auditLogger.LogWarning($"COM API registration denied - insufficient privileges (AttemptId: {attempt.AttemptId})", details);
+                break;
+
+            case RegistrationOutcome.DLLNotFound:
+                _auditLogger.LogError($"COM API registration failed - DLL not found (AttemptId: {attempt.AttemptId})", null);
+                break;
+
+            case RegistrationOutcome.ValidationFailed:
+                _auditLogger.LogWarning($"COM API registration completed but validation failed (AttemptId: {attempt.AttemptId})", details);
+                break;
+
+            case RegistrationOutcome.Cancelled:
+                _auditLogger.LogInfo($"COM API registration cancelled by user (AttemptId: {attempt.AttemptId})", details);
+                break;
+
+            default:
+                _auditLogger.LogWarning($"COM API registration completed with unknown outcome (AttemptId: {attempt.AttemptId})", details);
+                break;
+        }
     }
 }
