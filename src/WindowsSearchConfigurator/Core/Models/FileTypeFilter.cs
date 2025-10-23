@@ -33,6 +33,7 @@ public class FileTypeFilter
     /// <param name="pattern">The wildcard pattern.</param>
     /// <param name="filterType">The filter type (Include or Exclude).</param>
     /// <param name="appliesTo">The filter target (FileExtension, FileName, or Subfolder).</param>
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
     public FileTypeFilter(string pattern, FilterType filterType, FilterTarget appliesTo)
     {
         Pattern = pattern;

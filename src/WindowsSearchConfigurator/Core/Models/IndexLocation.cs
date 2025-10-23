@@ -42,6 +42,7 @@ public class IndexLocation
     /// </summary>
     /// <param name="fullPath">The full path to the location.</param>
     /// <param name="pathType">The type of path.</param>
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
     public IndexLocation(string fullPath, PathType pathType)
     {
         FullPath = fullPath;

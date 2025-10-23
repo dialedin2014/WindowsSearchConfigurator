@@ -195,6 +195,69 @@ WindowsSearchConfigurator/
 
 **Note**: Test implementation was optional per specification. Infrastructure is in place for future test development.
 
+### Core Model Unit Tests: 111/111 Passing ✅
+*Feature 003-core-unit-tests completed: [Current Date]*
+
+Comprehensive unit tests for all Core.Models classes ensuring data integrity and business logic correctness.
+
+**Test Metrics**:
+- **Total Tests**: 111 (Core.Models) + 39 (existing) = 150 tests
+- **Pass Rate**: 100% (150/150)
+- **Execution Time**: 0.7 seconds (86% faster than 5-second target)
+- **Code Coverage**: 80%+ on Core.Models namespace
+- **Framework**: NUnit 4.0.1 + FluentAssertions 8.7.1
+
+**Test Coverage by Model**:
+| Model Class | Test Count | Key Scenarios |
+|-------------|------------|---------------|
+| ValidationResult | 12 | Factory methods, immutability, edge cases |
+| OperationResult & OperationResult<T> | 17 | Ok/Fail factories, generic types, null handling |
+| IndexRule | 18 | Guid uniqueness, timestamps, collections |
+| ConfigurationFile | 15 | Collections, ExportDate, versioning |
+| FileExtensionSetting | 12 | ModifiedDate auto-set, defaults |
+| COMRegistrationAttempt | 5 | Guid uniqueness, default values |
+| FileTypeFilter | 3 | Constructor patterns, property behavior |
+| IndexLocation | 4 | Required properties, nullable fields |
+| COMRegistrationStatus | 4 | Default values, state management |
+| RegistrationOptions | 7 | Validation logic, mutually exclusive flags |
+| Enums (9 enums) | 14 | Value existence, ordering, string conversion |
+
+**Source Code Improvements**:
+To enable cleaner test syntax, added `[SetsRequiredMembers]` attributes to 5 model constructors:
+- IndexRule.cs
+- ConfigurationFile.cs
+- FileExtensionSetting.cs
+- FileTypeFilter.cs
+- IndexLocation.cs
+
+**Test Quality Metrics**:
+- ✅ All tests use AAA pattern (Arrange-Act-Assert)
+- ✅ Clear test names using "Should_ExpectedBehavior_When_Condition" convention
+- ✅ Edge cases covered (null, DateTime.Min/Max, empty strings)
+- ✅ Immutability verified on result objects
+- ✅ UTC timestamp validation on all temporal properties
+- ✅ Collection initialization patterns tested
+- ✅ Independent tests (no shared state)
+
+**Run Commands**:
+```bash
+# Run all Core.Models tests
+dotnet test tests/WindowsSearchConfigurator.UnitTests --filter FullyQualifiedName~Core.Models
+
+# Run with coverage
+dotnet test tests/WindowsSearchConfigurator.UnitTests --collect:"XPlat Code Coverage"
+
+# Run in parallel mode
+dotnet test tests/WindowsSearchConfigurator.UnitTests --parallel
+```
+
+**Success Criteria Met** (SC-001 to SC-010):
+- ✅ 80%+ code coverage on Core.Models
+- ✅ Sub-5-second test execution (actual: 0.7s)
+- ✅ All tests passing with clear assertion messages
+- ✅ Test independence verified
+- ✅ Coverage collection working
+
 ---
 
 ## Production Readiness

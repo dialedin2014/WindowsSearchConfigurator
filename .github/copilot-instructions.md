@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-10-22
 
 ## Active Technologies
+- C# / .NET 8.0 (LTS) + NUnit 4.x (test framework), NUnit3TestAdapter (test runner), Microsoft.NET.Test.Sdk (003-core-unit-tests)
+- N/A (unit tests operate on in-memory model instances) (003-core-unit-tests)
 
 - C# / .NET 8.0 (LTS) - targeting Windows 10/11 and Windows Server 2016+ (001-windows-search-configurator)
 
@@ -22,6 +24,7 @@ tests/
 C# / .NET 8.0 (LTS) - targeting Windows 10/11 and Windows Server 2016+: Follow standard conventions
 
 ## Recent Changes
+- 003-core-unit-tests: Added C# / .NET 8.0 (LTS) + NUnit 4.x (test framework), NUnit3TestAdapter (test runner), Microsoft.NET.Test.Sdk
 - 002-com-api-registration: Added C# / .NET 8.0 (LTS) - targeting Windows 10/11 and Windows Server 2016+
 
 - 001-windows-search-configurator: Added C# / .NET 8.0 (LTS) - targeting Windows 10/11 and Windows Server 2016+

@@ -39,6 +39,7 @@ public class FileExtensionSetting
     /// <param name="extension">The file extension.</param>
     /// <param name="indexingDepth">The indexing depth.</param>
     /// <param name="isDefaultSetting">Whether this is a default setting.</param>
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
     public FileExtensionSetting(string extension, IndexingDepth indexingDepth, bool isDefaultSetting = false)
     {
         Extension = extension;

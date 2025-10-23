@@ -71,6 +71,7 @@ public class IndexRule
     /// <param name="path">The path to index.</param>
     /// <param name="ruleType">The rule type (Include or Exclude).</param>
     /// <param name="source">The rule source.</param>
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
     public IndexRule(string path, RuleType ruleType, RuleSource source)
     {
         Id = Guid.NewGuid();

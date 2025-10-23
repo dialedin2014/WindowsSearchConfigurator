@@ -43,10 +43,12 @@ _ReSharper*/
 
 # Test Results
 [Tt]est[Rr]esult*/
+TestResults/
 [Bb]uild[Ll]og.*
 *.trx
 *.coverage
 *.coveragexml
+coverage-report/
 
 # Environment Files
 .env
