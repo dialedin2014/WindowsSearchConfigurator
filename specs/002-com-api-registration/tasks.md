@@ -159,7 +159,7 @@ Phase 6 (Polish & Integration Testing)
 - [ ] T038 [US2][US3] Manual test (as admin): Accept registration offer → verify registration succeeds
 - [ ] T039 [US2][US3] Manual test (as admin): Decline registration offer → verify manual instructions shown
 - [ ] T040 [US3] Manual test (as standard user): Accept offer → verify elevation instructions shown
-- [ ] T041 [US2][US3] Commit US2+US3 implementation: `git commit -m "feat(com): Complete interactive registration with privilege checking (US2, US3)"`
+- [x] T041 [US2][US3] Commit US2+US3 implementation: `git commit -m "feat(com): Complete interactive registration with privilege checking (US2, US3)"`
 
 **Acceptance Criteria US2**:
 - ✅ User is offered registration when COM not registered
@@ -191,10 +191,10 @@ Phase 6 (Polish & Integration Testing)
 
 ### Tasks
 
-- [ ] T042 [US4] Add global options to Program.cs in src/WindowsSearchConfigurator/Program.cs (--auto-register-com, --no-register-com)
-- [ ] T043 [US4] Update COMRegistrationService to handle flags in src/WindowsSearchConfigurator/Services/COMRegistrationService.cs
-- [ ] T044 [US4] Create contract tests for CLI flags in tests/WindowsSearchConfigurator.ContractTests/COMRegistrationContractTests.cs
-- [ ] T045 [US4] Run contract tests: `dotnet test --filter "FullyQualifiedName~ContractTests"`
+- [x] T042 [US4] Add global options to Program.cs in src/WindowsSearchConfigurator/Program.cs (--auto-register-com, --no-register-com)
+- [x] T043 [US4] Update COMRegistrationService to handle flags in src/WindowsSearchConfigurator/Services/COMRegistrationService.cs
+- [x] T044 [US4] Create contract tests for CLI flags in tests/WindowsSearchConfigurator.ContractTests/COMRegistrationContractTests.cs
+- [x] T045 [US4] Run contract tests: `dotnet test --filter "FullyQualifiedName~ContractTests"`
 - [ ] T046 [US4] Manual test: Run with `--auto-register-com` (as admin) → verify automatic registration
 - [ ] T047 [US4] Manual test: Run with `--no-register-com` (COM not registered) → verify immediate exit with error
 - [ ] T048 [US4] Manual test: Run with both flags → verify conflict error (exit code 3)
