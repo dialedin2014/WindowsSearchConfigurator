@@ -51,9 +51,29 @@ public class WindowsSearchInterop
 
         try
         {
-            dynamic? searchManager = Activator.CreateInstance(Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID)!);
-            dynamic? catalog = searchManager!.GetCatalog(SYSTEM_CATALOG);
+            var searchManagerType = Type.GetTypeFromProgID(SEARCH_MANAGER_PROGID);
+            if (searchManagerType == null)
+            {
+                throw new InvalidOperationException("Windows Search COM API is not available on this system.");
+            }
+
+            dynamic? searchManager = Activator.CreateInstance(searchManagerType);
+            if (searchManager == null)
+            {
+                throw new InvalidOperationException("Failed to create SearchManager COM object.");
+            }
+
+            dynamic? catalog = searchManager.GetCatalog(SYSTEM_CATALOG);
+            if (catalog == null)
+            {
+                throw new InvalidOperationException($"Failed to get catalog '{SYSTEM_CATALOG}'.");
+            }
+
             dynamic? scopeManager = catalog.GetCrawlScopeManager();
+            if (scopeManager == null)
+            {
+                throw new InvalidOperationException("Failed to get CrawlScopeManager.");
+            }
 
             // Get the scope rule enumerator
             dynamic? ruleEnumerator = scopeManager.EnumerateScopeRules();

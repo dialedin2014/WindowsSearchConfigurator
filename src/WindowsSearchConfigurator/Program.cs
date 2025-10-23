@@ -22,9 +22,16 @@ public class Program
     {
         try
         {
-            // Setup dependency injection
-            var services = ConfigureServices();
+            // Check for verbose mode early
+            bool verboseMode = args.Contains("--verbose") || args.Contains("-v");
+
+            // Setup dependency injection with verbose logger
+            var services = ConfigureServices(verboseMode);
             var serviceProvider = services.BuildServiceProvider();
+
+            var verboseLogger = serviceProvider.GetRequiredService<VerboseLogger>();
+            verboseLogger.WriteLine("Windows Search Configurator starting...");
+            verboseLogger.WriteLine($"Command-line arguments: {string.Join(" ", args)}");
 
             // Handle version option early
             if (args.Contains("--version"))
@@ -38,6 +45,12 @@ public class Program
 
             // Create root command
             var rootCommand = new RootCommand("Windows Search Configurator - Manage Windows Search index rules");
+            
+            // Add global verbose option
+            var verboseOption = new Option<bool>(
+                new[] { "--verbose", "-v" },
+                description: "Enable verbose diagnostic output");
+            rootCommand.AddGlobalOption(verboseOption);
 
             // Register commands
             var searchIndexManager = serviceProvider.GetRequiredService<ISearchIndexManager>();
@@ -63,9 +76,18 @@ public class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Fatal error: {ex.Message}");
-            if (args.Contains("--verbose") || args.Contains("-v"))
+            
+            // Show detailed error information in verbose mode
+            bool verboseMode = args.Contains("--verbose") || args.Contains("-v");
+            if (verboseMode)
             {
-                Console.Error.WriteLine(ex.StackTrace);
+                Console.Error.WriteLine($"\nException Type: {ex.GetType().Name}");
+                Console.Error.WriteLine($"Stack Trace:\n{ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.Error.WriteLine($"\nInner Exception: {ex.InnerException.GetType().Name}");
+                    Console.Error.WriteLine($"Inner Message: {ex.InnerException.Message}");
+                }
             }
             return 1;
         }
@@ -74,10 +96,15 @@ public class Program
     /// <summary>
     /// Configures the dependency injection container.
     /// </summary>
+    /// <param name="verboseMode">Whether verbose logging is enabled.</param>
     /// <returns>The configured service collection.</returns>
-    private static IServiceCollection ConfigureServices()
+    private static IServiceCollection ConfigureServices(bool verboseMode)
     {
         var services = new ServiceCollection();
+
+        // Register verbose logger
+        var verboseLogger = new VerboseLogger { IsEnabled = verboseMode };
+        services.AddSingleton(verboseLogger);
 
         // Register core interfaces and implementations
         services.AddSingleton<IPrivilegeChecker, PrivilegeChecker>();

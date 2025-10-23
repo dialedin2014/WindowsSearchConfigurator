@@ -208,7 +208,7 @@
 
 - [X] T092 [P] Add XML documentation comments to all public interfaces in src/WindowsSearchConfigurator/Core/Interfaces/
 - [X] T093 [P] Add XML documentation comments to all public models in src/WindowsSearchConfigurator/Core/Models/
-- [ ] T094 [P] Implement --verbose flag support in Program.cs for detailed diagnostic output
+- [X] T094 [P] Implement --verbose flag support in Program.cs for detailed diagnostic output
 - [X] T095 [P] Implement --version flag handler in Program.cs displaying version, copyright, runtime info
 - [X] T096 [P] Add comprehensive error message templates with suggested actions in all command handlers
 - [X] T097 [P] Create README.md at repository root with project overview and quick start
@@ -217,8 +217,8 @@
 - [X] T100 [P] Validate all confirmation prompts follow consistent format with clear warnings
 ### T10: User Acceptance Testing (UAT)
 
-- [ ] T101 Run through all scenarios in specs/001-windows-search-configurator/quickstart.md and verify functionality
-- [ ] T102 Final code review: ensure all paths ≤260 chars, all COM calls have error handling, all write operations check privileges
+- [X] T101 Run through all scenarios in specs/001-windows-search-configurator/quickstart.md and verify functionality
+- [X] T102 Final code review: ensure all paths ≤260 chars, all COM calls have error handling, all write operations check privileges
 
 ---
 
