@@ -1,0 +1,221 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/dialedin2014/WindowsSearchConfigurator/schemas/configuration-v1.json",
+  "title": "Windows Search Configuration",
+  "description": "Schema for Windows Search Configurator import/export files",
+  "type": "object",
+  "required": ["version", "exportDate", "exportedBy", "rules", "extensionSettings"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version using semantic versioning",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "examples": ["1.0", "1.0.0"]
+    },
+    "exportDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when configuration was exported"
+    },
+    "exportedBy": {
+      "type": "string",
+      "description": "User identity who performed the export (DOMAIN\\Username format)",
+      "pattern": "^[^\\\\]+\\\\[^\\\\]+$"
+    },
+    "machineName": {
+      "type": "string",
+      "description": "Hostname of the machine where export was performed"
+    },
+    "rules": {
+      "type": "array",
+      "description": "Collection of Windows Search index rules",
+      "items": {
+        "$ref": "#/definitions/indexRule"
+      }
+    },
+    "extensionSettings": {
+      "type": "array",
+      "description": "Collection of file extension indexing depth settings",
+      "items": {
+        "$ref": "#/definitions/extensionSetting"
+      }
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Optional SHA256 checksum for file integrity validation",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    }
+  },
+  "definitions": {
+    "indexRule": {
+      "type": "object",
+      "required": ["path", "ruleType", "recursive"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for the rule"
+        },
+        "path": {
+          "type": "string",
+          "description": "Absolute file system path (local or UNC)",
+          "maxLength": 260,
+          "minLength": 3
+        },
+        "ruleType": {
+          "type": "string",
+          "enum": ["include", "exclude"],
+          "description": "Whether to include or exclude this location from indexing"
+        },
+        "recursive": {
+          "type": "boolean",
+          "description": "Whether to index subfolders",
+          "default": true
+        },
+        "fileTypeFilters": {
+          "type": "array",
+          "description": "File type patterns to include or exclude",
+          "items": {
+            "$ref": "#/definitions/fileTypeFilter"
+          },
+          "default": []
+        },
+        "excludedSubfolders": {
+          "type": "array",
+          "description": "Subfolder patterns to exclude from indexing",
+          "items": {
+            "type": "string",
+            "description": "Subfolder name or pattern (supports wildcards)"
+          },
+          "default": []
+        },
+        "isUserDefined": {
+          "type": "boolean",
+          "description": "Whether rule was created by user vs Windows default"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the rule was created"
+        },
+        "modifiedDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the rule was last modified"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["system", "user", "imported"],
+          "description": "Origin of the rule"
+        }
+      }
+    },
+    "fileTypeFilter": {
+      "type": "object",
+      "required": ["pattern", "filterType", "appliesTo"],
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "Wildcard pattern (e.g., *.txt, node_modules)",
+          "minLength": 1
+        },
+        "filterType": {
+          "type": "string",
+          "enum": ["include", "exclude"],
+          "description": "Whether to include or exclude matching items"
+        },
+        "appliesTo": {
+          "type": "string",
+          "enum": ["fileExtension", "fileName", "subfolder"],
+          "description": "What the pattern applies to"
+        }
+      }
+    },
+    "extensionSetting": {
+      "type": "object",
+      "required": ["extension", "indexingDepth"],
+      "properties": {
+        "extension": {
+          "type": "string",
+          "description": "File extension including leading dot",
+          "pattern": "^\\.[a-zA-Z0-9]+$",
+          "examples": [".txt", ".log", ".cs"]
+        },
+        "indexingDepth": {
+          "type": "string",
+          "enum": ["propertiesOnly", "propertiesAndContents"],
+          "description": "Level of indexing for this extension"
+        },
+        "isDefaultSetting": {
+          "type": "boolean",
+          "description": "Whether this is a Windows default or user-configured setting"
+        },
+        "modifiedDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the setting was last changed"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": "1.0",
+      "exportDate": "2025-10-22T10:30:00Z",
+      "exportedBy": "DOMAIN\\AdminUser",
+      "machineName": "WORKSTATION01",
+      "rules": [
+        {
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "path": "D:\\Projects",
+          "ruleType": "include",
+          "recursive": true,
+          "fileTypeFilters": [
+            {
+              "pattern": "*.cs",
+              "filterType": "include",
+              "appliesTo": "fileExtension"
+            },
+            {
+              "pattern": "*.csproj",
+              "filterType": "include",
+              "appliesTo": "fileExtension"
+            }
+          ],
+          "excludedSubfolders": ["bin", "obj", "node_modules"],
+          "isUserDefined": true,
+          "createdDate": "2025-10-20T14:22:00Z",
+          "modifiedDate": "2025-10-22T09:15:00Z",
+          "source": "user"
+        },
+        {
+          "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+          "path": "C:\\Temp",
+          "ruleType": "exclude",
+          "recursive": false,
+          "fileTypeFilters": [],
+          "excludedSubfolders": [],
+          "isUserDefined": true,
+          "createdDate": "2025-10-21T08:00:00Z",
+          "modifiedDate": "2025-10-21T08:00:00Z",
+          "source": "user"
+        }
+      ],
+      "extensionSettings": [
+        {
+          "extension": ".log",
+          "indexingDepth": "propertiesOnly",
+          "isDefaultSetting": false,
+          "modifiedDate": "2025-10-22T08:30:00Z"
+        },
+        {
+          "extension": ".cs",
+          "indexingDepth": "propertiesAndContents",
+          "isDefaultSetting": false,
+          "modifiedDate": "2025-10-22T08:30:00Z"
+        }
+      ],
+      "checksum": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
+    }
+  ]
+}
