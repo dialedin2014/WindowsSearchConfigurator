@@ -54,6 +54,7 @@ public class ConfigurationFile
     /// <param name="version">The schema version.</param>
     /// <param name="exportedBy">The user performing the export.</param>
     /// <param name="machineName">The machine name.</param>
+    [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
     public ConfigurationFile(string version, string exportedBy, string machineName)
     {
         Version = version;
