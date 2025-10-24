@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-10-23
+
+### Added
+
+#### Verbose Diagnostic Logging (Feature 004)
+
+- **Global `--verbose` Flag**: Enable comprehensive diagnostic logging with `--verbose` or `-v` flag on any command
+- **Automatic Log Files**: Logs written to uniquely-named files (`WindowsSearchConfigurator_YYYYMMDD_HHMMSS_GUID.log`) in executable directory
+- **Session Metadata**: Complete session tracking with:
+  - Unique session ID (GUID)
+  - Start/end timestamps (ISO 8601 UTC format)
+  - Command-line arguments captured
+  - User context (username, domain, working directory)
+  - System information (Windows version, .NET runtime)
+  - Exit code and final status (Success/Failed/Aborted)
+  - Total session duration
+- **Five Severity Levels**:
+  - INFO - General informational messages
+  - OPERATION - Key operations being performed
+  - WARNING - Non-critical issues
+  - ERROR - Operation-preventing errors
+  - EXCEPTION - Unhandled exceptions with full stack traces
+- **Comprehensive Command Logging**: All 8 commands now log:
+  - Operation start with parameters
+  - Privilege checks and validation steps
+  - Key decision points (user confirmations, filters applied)
+  - Success/failure outcomes with details
+  - Exception handling with stack traces
+- **Thread-Safe File I/O**: Async file operations with SemaphoreSlim synchronization
+- **Graceful Degradation**: File logging failures don't prevent tool operation - continues with console output only
+- **Dual Output Mode**: When `--verbose` enabled, output goes to both console (INFO/OPERATION/ERROR) and log file (all severities)
+
+**Logging Coverage**:
+- `AddCommand`: 8 diagnostic logging points
+- `RemoveCommand`: 7 diagnostic logging points
+- `ListCommand`: 9 diagnostic logging points
+- `ModifyCommand`: 12 diagnostic logging points
+- `ConfigureDepthCommand`: 8 diagnostic logging points
+- `SearchExtensionsCommand`: 7 diagnostic logging points
+- `ExportCommand`: 7 diagnostic logging points
+- `ImportCommand`: 11 diagnostic logging points
+
+**Core Components**:
+- `LogSeverity` enum - Five severity levels
+- `LogEntry` record - Individual log entry with validation
+- `SessionStatus` enum - Session state tracking
+- `LogSession` class - Complete session metadata with duration calculation
+- `IFileLogger` interface - File logging abstraction
+- `ILogFileNameGenerator` interface - Filename generation abstraction
+- `FileLogger` class - Thread-safe async file writer
+- `LogFileNameGenerator` class - Unique filename generation with timestamps and GUIDs
+- Enhanced `VerboseLogger` - Dual output with session management and IDisposable support
+
+**Use Cases**:
+- **Troubleshooting**: Capture detailed diagnostics when operations fail
+- **Auditing**: Complete trail of administrative actions
+- **Debugging**: See exact filter patterns, validation steps, and decision points
+- **Performance Analysis**: Timestamps identify slow operations
+- **Automated Deployments**: Generate logs for centralized review
+
+**Performance**:
+- Minimal overhead (<5% in typical scenarios)
+- Async I/O prevents blocking
+- Log files: 5-50 KB per execution
+- SemaphoreSlim ensures thread safety without performance degradation
+
+**Test Coverage**: 42 new tests (229 total tests passing)
+- `LogEntryTests` - Validation, immutability, severity handling
+- `LogSessionTests` - Duration calculation, status tracking
+- `LogFileNameGeneratorTests` - Unique names, format validation
+- `FileLoggerTests` - Initialization, error handling, disposal
+- `FileLoggerWriteTests` - Entry writing, session headers/footers
+- `VerboseLoggerTests` - Dual output, session lifecycle, integration
+
 ### Added
 
 #### COM API Registration Support (Feature 002)

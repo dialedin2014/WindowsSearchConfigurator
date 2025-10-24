@@ -147,6 +147,7 @@ WindowsSearchConfigurator.exe import "config.json" --continue-on-error
 
 - `--help`, `-h` - Display help information
 - `--version` - Display version information
+- `--verbose`, `-v` - Enable verbose diagnostic logging to file
 
 ### `list` Command
 
@@ -289,6 +290,212 @@ WindowsSearchConfigurator.exe export "server-config.json"
 # On target servers (automated deployment)
 WindowsSearchConfigurator.exe import "server-config.json" --continue-on-error
 ```
+
+## Verbose Diagnostic Logging
+
+The `--verbose` flag enables comprehensive diagnostic logging to help troubleshoot issues, audit administrative actions, and understand tool behavior in detail.
+
+### Enabling Verbose Logging
+
+Add the `--verbose` or `-v` flag to any command:
+
+```powershell
+# Enable verbose logging for a command
+WindowsSearchConfigurator.exe --verbose add "D:\Projects"
+
+# Works with all commands
+WindowsSearchConfigurator.exe -v list --format json
+WindowsSearchConfigurator.exe --verbose import "config.json" --merge
+```
+
+### Log File Location
+
+When verbose logging is enabled, a log file is automatically created in the same directory as the executable:
+
+```
+WindowsSearchConfigurator_20251023_143052_a3f8e2.log
+```
+
+**Filename format**: `WindowsSearchConfigurator_YYYYMMDD_HHMMSS_GUID.log`
+- **Date/Time**: Timestamp when the tool was started
+- **GUID**: 6-character unique identifier to prevent file collisions
+- **Location**: Same directory as `WindowsSearchConfigurator.exe`
+
+### Log File Contents
+
+The log file contains:
+
+1. **Session Header**
+   - Session ID (GUID)
+   - Start timestamp (ISO 8601 UTC format)
+   - Command line arguments
+   - User information (username, domain)
+   - System information (Windows version, .NET runtime version)
+   - Working directory
+
+2. **Operation Log Entries**
+   - Timestamp for each operation
+   - Severity level (INFO, OPERATION, WARNING, ERROR, EXCEPTION)
+   - Component name (which command or service)
+   - Detailed message
+   - Stack traces for exceptions
+
+3. **Session Footer**
+   - End timestamp
+   - Session duration
+   - Exit code
+   - Final status (Success, Failed, or Aborted)
+
+### Example Log File
+
+```
+================================================================================
+SESSION START
+================================================================================
+Session ID:        f8e2a3c4-b5d6-47e8-9f1a-2b3c4d5e6f7a
+Start Time:        2025-10-23T14:30:52.123Z
+Command Line:      WindowsSearchConfigurator.exe --verbose add D:\Projects
+User:              DOMAIN\username
+Working Directory: C:\Tools
+Windows Version:   Microsoft Windows NT 10.0.22631.0
+Runtime Version:   .NET 8.0.0
+================================================================================
+
+2025-10-23T14:30:52.150Z [INFO] Program: Initializing verbose file logging
+2025-10-23T14:30:52.167Z [INFO] Program: File logging enabled: WindowsSearchConfigurator_20251023_143052_f8e2a3.log
+2025-10-23T14:30:52.201Z [INFO] AddCommand: Executing add command
+2025-10-23T14:30:52.205Z [OPERATION] AddCommand: Path: D:\Projects, NonRecursive: False, RuleType: Include
+2025-10-23T14:30:52.212Z [INFO] AddCommand: Checking administrator privileges
+2025-10-23T14:30:52.245Z [INFO] AddCommand: Privilege check passed
+2025-10-23T14:30:52.248Z [INFO] AddCommand: Validating path: D:\Projects
+2025-10-23T14:30:52.289Z [INFO] AddCommand: Path normalized to: D:\Projects
+2025-10-23T14:30:52.293Z [OPERATION] AddCommand: Adding index rule for: D:\Projects
+2025-10-23T14:30:52.756Z [INFO] AddCommand: Successfully added index rule for D:\Projects
+2025-10-23T14:30:52.789Z [INFO] Program: Completing logging session
+
+================================================================================
+SESSION END
+================================================================================
+End Time:     2025-10-23T14:30:52.793Z
+Duration:     00:00:00.670
+Exit Code:    0
+Status:       Success
+================================================================================
+```
+
+### Log Severity Levels
+
+- **INFO** - General informational messages (operation steps, status updates)
+- **OPERATION** - Key operations being performed (add rule, modify setting)
+- **WARNING** - Non-critical issues that don't prevent operation
+- **ERROR** - Errors that prevent operation from completing
+- **EXCEPTION** - Unhandled exceptions with full stack traces
+
+### Use Cases for Verbose Logging
+
+**1. Troubleshooting Failures**
+```powershell
+# Capture detailed diagnostic info when operation fails
+WindowsSearchConfigurator.exe --verbose add "\\server\share\data"
+
+# Review log file to see exactly where and why it failed
+notepad WindowsSearchConfigurator_*.log
+```
+
+**2. Auditing Administrative Actions**
+```powershell
+# Track all changes made during batch operations
+WindowsSearchConfigurator.exe --verbose import "production-config.json"
+
+# Log file provides complete audit trail of what was changed
+```
+
+**3. Debugging Configuration Issues**
+```powershell
+# See how filters and exclusions are being processed
+WindowsSearchConfigurator.exe --verbose modify "D:\Data" `
+  --include *.txt,*.doc `
+  --exclude-folders temp,cache
+
+# Log shows exact filter patterns being applied
+```
+
+**4. Performance Analysis**
+```powershell
+# Identify slow operations in large batch imports
+WindowsSearchConfigurator.exe --verbose import "large-config.json" --continue-on-error
+
+# Session duration and per-operation timestamps help identify bottlenecks
+```
+
+**5. Automated Deployment Verification**
+```powershell
+# Generate detailed logs for automated deployments
+$logDir = "C:\Logs"
+WindowsSearchConfigurator.exe --verbose import "config.json"
+
+# Copy log files to central location for review
+Copy-Item WindowsSearchConfigurator_*.log $logDir
+```
+
+### Log Analysis Tips
+
+**Find specific operations:**
+```powershell
+# Search for specific command execution
+Select-String "AddCommand: Executing" WindowsSearchConfigurator_*.log
+
+# Find all errors
+Select-String "\[ERROR\]" WindowsSearchConfigurator_*.log
+
+# Find exceptions with context
+Select-String -Context 3,10 "\[EXCEPTION\]" WindowsSearchConfigurator_*.log
+```
+
+**Parse structured data:**
+```powershell
+# Extract session information
+$logs = Get-Content WindowsSearchConfigurator_*.log
+$sessionId = ($logs | Select-String "Session ID:").ToString().Split(":")[1].Trim()
+$exitCode = ($logs | Select-String "Exit Code:").ToString().Split(":")[1].Trim()
+
+Write-Host "Session $sessionId completed with exit code $exitCode"
+```
+
+**Aggregate multiple log files:**
+```powershell
+# Find all failed sessions
+Get-ChildItem WindowsSearchConfigurator_*.log | ForEach-Object {
+    $status = (Select-String "Status:" $_).ToString().Split(":")[1].Trim()
+    if ($status -eq "Failed") {
+        Write-Host "$($_.Name): $status"
+    }
+}
+```
+
+### Important Notes
+
+1. **Performance Impact**: Verbose logging has minimal performance impact but does write to disk synchronously. Not recommended for high-frequency operations.
+
+2. **Disk Space**: Log files are plain text and typically range from 5-50 KB per execution. Monitor disk space in automated scenarios.
+
+3. **Sensitive Information**: Log files may contain:
+   - Full file paths
+   - Usernames and domain names
+   - Command-line arguments
+   - System configuration details
+   
+   Store log files securely and review before sharing.
+
+4. **File Logging Errors**: If file logging fails to initialize (e.g., no write permissions), the tool continues with console output only. An error message is displayed but doesn't prevent operation.
+
+5. **Log Rotation**: The tool does not automatically delete old log files. Implement your own log rotation strategy:
+   ```powershell
+   # Delete log files older than 30 days
+   Get-ChildItem WindowsSearchConfigurator_*.log | 
+       Where-Object { $_.CreationTime -lt (Get-Date).AddDays(-30) } | 
+       Remove-Item
+   ```
 
 ## Configuration File Format
 

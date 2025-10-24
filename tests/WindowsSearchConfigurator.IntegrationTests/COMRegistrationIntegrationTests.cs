@@ -79,6 +79,10 @@ public class COMRegistrationIntegrationTests
         {
             TestContext.WriteLine($"Warning: Failed to restore initial COM registration state: {ex.Message}");
         }
+        finally
+        {
+            _verboseLogger?.Dispose();
+        }
     }
 
     #region Detection Tests

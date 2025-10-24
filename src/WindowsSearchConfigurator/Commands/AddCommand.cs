@@ -2,6 +2,7 @@ using System.CommandLine;
 using WindowsSearchConfigurator.Core.Interfaces;
 using WindowsSearchConfigurator.Core.Models;
 using WindowsSearchConfigurator.Services;
+using WindowsSearchConfigurator.Utilities;
 
 namespace WindowsSearchConfigurator.Commands;
 
@@ -17,12 +18,14 @@ public static class AddCommand
     /// <param name="privilegeChecker">The privilege checker service.</param>
     /// <param name="pathValidator">The path validator service.</param>
     /// <param name="auditLogger">The audit logger service.</param>
+    /// <param name="verboseLogger">The verbose logger service.</param>
     /// <returns>The configured command.</returns>
     public static Command Create(
         ISearchIndexManager searchIndexManager,
         IPrivilegeChecker privilegeChecker,
         PathValidator pathValidator,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        VerboseLogger verboseLogger)
     {
         var command = new Command("add", "Add a location to the Windows Search index");
 
@@ -77,6 +80,7 @@ public static class AddCommand
                 privilegeChecker,
                 pathValidator,
                 auditLogger,
+                verboseLogger,
                 path,
                 !nonRecursive,
                 include,
@@ -96,6 +100,7 @@ public static class AddCommand
         IPrivilegeChecker privilegeChecker,
         PathValidator pathValidator,
         IAuditLogger auditLogger,
+        VerboseLogger verboseLogger,
         string path,
         bool recursive,
         string[]? includePatterns,
@@ -105,20 +110,28 @@ public static class AddCommand
     {
         try
         {
+            verboseLogger.WriteLine("AddCommand: Executing add command");
+            verboseLogger.WriteOperation("AddCommand", $"Path: {path}, Recursive: {recursive}, Type: {ruleType}");
+
             // Check for administrator privileges (T051)
+            verboseLogger.WriteLine("AddCommand: Checking administrator privileges");
             if (!privilegeChecker.IsAdministrator())
             {
+                verboseLogger.WriteError("Add command failed: Insufficient privileges");
                 Console.Error.WriteLine("Error: Administrator privileges required to add index rules.");
                 Console.Error.WriteLine("Please restart the application as administrator.");
                 auditLogger.LogError("Add command failed: Insufficient privileges");
                 Environment.Exit(4); // Exit code 4: Insufficient privileges
                 return;
             }
+            verboseLogger.WriteLine("AddCommand: Privilege check passed");
 
             // Validate the path (T052)
+            verboseLogger.WriteLine($"AddCommand: Validating path: {path}");
             var validation = pathValidator.ValidatePath(path);
             if (!validation.IsValid)
             {
+                verboseLogger.WriteError($"Path validation failed: {validation.ErrorMessage}");
                 Console.Error.WriteLine($"Error: {validation.ErrorMessage}");
                 auditLogger.LogError($"Add command failed: Invalid path '{path}' - {validation.ErrorMessage}");
                 Environment.Exit(3); // Exit code 3: Invalid input
@@ -127,6 +140,7 @@ public static class AddCommand
 
             // Use normalized path
             var normalizedPath = validation.NormalizedValue!;
+            verboseLogger.WriteLine($"AddCommand: Path normalized to: {normalizedPath}");
 
             // Display warning if path doesn't exist
             if (!Directory.Exists(normalizedPath) && !File.Exists(normalizedPath))
@@ -222,22 +236,26 @@ public static class AddCommand
             Console.WriteLine();
 
             // Add the rule (T056: error handling is in SearchIndexManager)
+            verboseLogger.WriteOperation("AddCommand", $"Adding index rule for: {normalizedPath}");
             var result = await searchIndexManager.AddIndexRuleAsync(rule);
 
             if (result.Success)
             {
+                verboseLogger.WriteLine($"AddCommand: Successfully added index rule for '{normalizedPath}'");
                 Console.WriteLine($"✓ Successfully added index rule for '{normalizedPath}'");
                 Console.WriteLine("Windows Search will begin indexing this location.");
                 Environment.Exit(0); // Exit code 0: Success
             }
             else
             {
+                verboseLogger.WriteError($"AddCommand failed: {result.Message}");
                 Console.Error.WriteLine($"Error: {result.Message}");
                 Environment.Exit(2); // Exit code 2: Operation failed
             }
         }
         catch (Exception ex)
         {
+            verboseLogger.WriteException(ex);
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             auditLogger.LogError($"Add command failed with exception: {ex.Message}", ex);
             Environment.Exit(1); // Exit code 1: General error

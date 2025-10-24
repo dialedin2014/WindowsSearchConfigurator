@@ -2,6 +2,7 @@ using System.CommandLine;
 using WindowsSearchConfigurator.Core.Interfaces;
 using WindowsSearchConfigurator.Core.Models;
 using WindowsSearchConfigurator.Services;
+using WindowsSearchConfigurator.Utilities;
 
 namespace WindowsSearchConfigurator.Commands;
 
@@ -17,12 +18,14 @@ public static class ModifyCommand
     /// <param name="privilegeChecker">The privilege checker service.</param>
     /// <param name="pathValidator">The path validator service.</param>
     /// <param name="auditLogger">The audit logger service.</param>
+    /// <param name="verboseLogger">The verbose logger service.</param>
     /// <returns>The configured command.</returns>
     public static Command Create(
         ISearchIndexManager searchIndexManager,
         IPrivilegeChecker privilegeChecker,
         PathValidator pathValidator,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        VerboseLogger verboseLogger)
     {
         var command = new Command("modify", "Modify an existing Windows Search index rule");
 
@@ -74,19 +77,20 @@ public static class ModifyCommand
         command.AddOption(typeOption);
         command.AddOption(forceOption);
 
-        command.SetHandler(async (path, recursive, include, excludeFiles, excludeFolders, ruleType, force) =>
+        command.SetHandler(async (path, recursive, include, excludeFiles, excludeFolders, type, force) =>
         {
             await ExecuteAsync(
                 searchIndexManager,
                 privilegeChecker,
                 pathValidator,
                 auditLogger,
+                verboseLogger,
                 path,
                 recursive,
                 include,
                 excludeFiles,
                 excludeFolders,
-                ruleType,
+                type,
                 force);
         }, pathArgument, recursiveOption, includeOption, excludeFilesOption, excludeFoldersOption, typeOption, forceOption);
 
@@ -101,6 +105,7 @@ public static class ModifyCommand
         IPrivilegeChecker privilegeChecker,
         PathValidator pathValidator,
         IAuditLogger auditLogger,
+        VerboseLogger verboseLogger,
         string path,
         bool? recursive,
         string[]? includePatterns,
@@ -111,20 +116,28 @@ public static class ModifyCommand
     {
         try
         {
+            verboseLogger.WriteLine("ModifyCommand: Executing modify command");
+            verboseLogger.WriteOperation("ModifyCommand", $"Path: {path}, Recursive: {recursive}, RuleType: {ruleType}, Force: {force}");
+
             // Check for administrator privileges (T066)
+            verboseLogger.WriteLine("ModifyCommand: Checking administrator privileges");
             if (!privilegeChecker.IsAdministrator())
             {
+                verboseLogger.WriteError("Modify command failed: Insufficient privileges");
                 Console.Error.WriteLine("Error: Administrator privileges required to modify index rules.");
                 Console.Error.WriteLine("Please restart the application as administrator.");
                 auditLogger.LogError("Modify command failed: Insufficient privileges");
                 Environment.Exit(4); // Exit code 4: Insufficient privileges
                 return;
             }
+            verboseLogger.WriteLine("ModifyCommand: Privilege check passed");
 
             // Validate and normalize the path
+            verboseLogger.WriteLine($"ModifyCommand: Validating path: {path}");
             var validation = pathValidator.ValidatePath(path);
             if (!validation.IsValid)
             {
+                verboseLogger.WriteError($"Path validation failed: {validation.ErrorMessage}");
                 Console.Error.WriteLine($"Error: {validation.ErrorMessage}");
                 auditLogger.LogError($"Modify command failed: Invalid path '{path}' - {validation.ErrorMessage}");
                 Environment.Exit(3); // Exit code 3: Invalid input
@@ -132,21 +145,27 @@ public static class ModifyCommand
             }
 
             var normalizedPath = validation.NormalizedValue!;
+            verboseLogger.WriteLine($"ModifyCommand: Path normalized to: {normalizedPath}");
 
             // Check if at least one modification is specified
+            verboseLogger.WriteLine("ModifyCommand: Validating modification parameters");
             if (!recursive.HasValue && includePatterns == null && excludeFilePatterns == null && 
                 excludeFolderPatterns == null && !ruleType.HasValue)
             {
+                verboseLogger.WriteError("No modification options specified");
                 Console.Error.WriteLine("Error: At least one modification option must be specified.");
                 Console.Error.WriteLine("Use --help to see available options.");
                 Environment.Exit(3); // Exit code 3: Invalid input
                 return;
             }
+            verboseLogger.WriteLine("ModifyCommand: At least one modification parameter specified");
 
             // Retrieve existing rule (T067)
+            verboseLogger.WriteLine($"ModifyCommand: Retrieving existing rule for: {normalizedPath}");
             var allRulesResult = await searchIndexManager.GetAllRulesAsync(includeSystemRules: true);
             if (!allRulesResult.Success)
             {
+                verboseLogger.WriteError($"Failed to retrieve rules: {allRulesResult.Message}");
                 Console.Error.WriteLine($"Error: {allRulesResult.Message}");
                 Environment.Exit(2); // Exit code 2: Operation failed
                 return;
@@ -157,11 +176,13 @@ public static class ModifyCommand
 
             if (existingRule == null)
             {
+                verboseLogger.WriteError($"No rule found for path: {normalizedPath}");
                 Console.Error.WriteLine($"Error: No index rule found for path '{normalizedPath}'.");
                 Console.Error.WriteLine("Use the 'add' command to create a new rule.");
                 Environment.Exit(2); // Exit code 2: Operation failed
                 return;
             }
+            verboseLogger.WriteLine($"ModifyCommand: Found existing rule (ID: {existingRule.Id})");
 
             // Build modified rule with changes
             var modifiedRule = new IndexRule
@@ -181,6 +202,7 @@ public static class ModifyCommand
             // Update filters if specified
             if (includePatterns != null)
             {
+                verboseLogger.WriteLine($"ModifyCommand: Updating include patterns: {string.Join(", ", includePatterns)}");
                 // Clear existing include filters and add new ones
                 modifiedRule.FileTypeFilters = modifiedRule.FileTypeFilters
                     .Where(f => f.FilterType != FilterType.Include || f.AppliesTo != FilterTarget.FileExtension)
@@ -199,10 +221,12 @@ public static class ModifyCommand
                         });
                     }
                 }
+                verboseLogger.WriteLine($"ModifyCommand: Added {modifiedRule.FileTypeFilters.Count(f => f.FilterType == FilterType.Include)} include filters");
             }
 
             if (excludeFilePatterns != null)
             {
+                verboseLogger.WriteLine($"ModifyCommand: Updating exclude file patterns: {string.Join(", ", excludeFilePatterns)}");
                 // Clear existing exclude file filters and add new ones
                 modifiedRule.FileTypeFilters = modifiedRule.FileTypeFilters
                     .Where(f => f.FilterType != FilterType.Exclude || f.AppliesTo != FilterTarget.FileName)
@@ -221,17 +245,20 @@ public static class ModifyCommand
                         });
                     }
                 }
+                verboseLogger.WriteLine($"ModifyCommand: Added {modifiedRule.FileTypeFilters.Count(f => f.FilterType == FilterType.Exclude && f.AppliesTo == FilterTarget.FileName)} exclude file filters");
             }
 
             // Update excluded subfolders if specified
             if (excludeFolderPatterns != null)
             {
+                verboseLogger.WriteLine($"ModifyCommand: Updating excluded subfolders: {string.Join(", ", excludeFolderPatterns)}");
                 modifiedRule.ExcludedSubfolders.Clear();
                 foreach (var pattern in excludeFolderPatterns)
                 {
                     var splitPatterns = pattern.Split(',', StringSplitOptions.RemoveEmptyEntries);
                     modifiedRule.ExcludedSubfolders.AddRange(splitPatterns.Select(p => p.Trim()));
                 }
+                verboseLogger.WriteLine($"ModifyCommand: Set {modifiedRule.ExcludedSubfolders.Count} excluded subfolders");
             }
 
             // Display changes
@@ -253,22 +280,28 @@ public static class ModifyCommand
             // Confirmation prompt (T068) for destructive changes
             if (!force && (ruleType.HasValue || recursive.HasValue))
             {
+                verboseLogger.WriteLine("ModifyCommand: Prompting for confirmation (destructive change)");
                 Console.Write("Continue with modification? (y/N): ");
                 var response = Console.ReadLine()?.Trim().ToLowerInvariant();
+                verboseLogger.WriteLine($"ModifyCommand: User response: {response}");
                 if (response != "y" && response != "yes")
                 {
+                    verboseLogger.WriteLine("ModifyCommand: User cancelled operation");
                     Console.WriteLine("Operation cancelled.");
                     Environment.Exit(0);
                     return;
                 }
+                verboseLogger.WriteLine("ModifyCommand: User confirmed modification");
                 Console.WriteLine();
             }
 
             // Modify the rule
+            verboseLogger.WriteOperation("ModifyCommand", $"Modifying rule for: {normalizedPath}");
             var result = await searchIndexManager.ModifyIndexRuleAsync(modifiedRule);
 
             if (result.Success)
             {
+                verboseLogger.WriteLine($"ModifyCommand: Successfully modified rule for {normalizedPath}");
                 Console.WriteLine($"✓ Successfully modified index rule for '{normalizedPath}'");
                 
                 // Audit logging (T069) is already done in SearchIndexManager
@@ -276,12 +309,14 @@ public static class ModifyCommand
             }
             else
             {
+                verboseLogger.WriteError($"ModifyCommand failed: {result.Message}");
                 Console.Error.WriteLine($"Error: {result.Message}");
                 Environment.Exit(2); // Exit code 2: Operation failed
             }
         }
         catch (Exception ex)
         {
+            verboseLogger.WriteException(ex);
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             auditLogger.LogError($"Modify command failed with exception: {ex.Message}", ex);
             Environment.Exit(1); // Exit code 1: General error
