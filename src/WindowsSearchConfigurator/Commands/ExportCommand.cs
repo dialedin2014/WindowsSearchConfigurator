@@ -1,6 +1,7 @@
 using System.CommandLine;
 using WindowsSearchConfigurator.Core.Interfaces;
 using WindowsSearchConfigurator.Services;
+using WindowsSearchConfigurator.Utilities;
 
 namespace WindowsSearchConfigurator.Commands;
 
@@ -14,10 +15,12 @@ public static class ExportCommand
     /// </summary>
     /// <param name="configurationStore">The configuration store service.</param>
     /// <param name="auditLogger">The audit logger service.</param>
+    /// <param name="verboseLogger">The verbose logger service.</param>
     /// <returns>The configured command.</returns>
     public static Command Create(
         IConfigurationStore configurationStore,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        VerboseLogger verboseLogger)
     {
         var command = new Command("export", "Export current configuration to JSON file");
 
@@ -52,6 +55,7 @@ public static class ExportCommand
             await ExecuteAsync(
                 configurationStore,
                 auditLogger,
+                verboseLogger,
                 file,
                 includeDefaults,
                 includeExtensions,
@@ -67,6 +71,7 @@ public static class ExportCommand
     private static async Task ExecuteAsync(
         IConfigurationStore configurationStore,
         IAuditLogger auditLogger,
+        VerboseLogger verboseLogger,
         string filePath,
         bool includeDefaults,
         bool includeExtensions,
@@ -74,19 +79,27 @@ public static class ExportCommand
     {
         try
         {
+            verboseLogger.WriteLine("ExportCommand: Executing export command");
+            verboseLogger.WriteOperation("ExportCommand", $"File: {filePath}, IncludeDefaults: {includeDefaults}, IncludeExtensions: {includeExtensions}, Overwrite: {overwrite}");
+
             // Check if file exists and prompt if overwrite not specified
+            verboseLogger.WriteLine($"ExportCommand: Checking if file exists: {filePath}");
             if (File.Exists(filePath) && !overwrite)
             {
+                verboseLogger.WriteLine("ExportCommand: File exists, prompting for overwrite confirmation");
                 Console.WriteLine($"Warning: File '{filePath}' already exists.");
                 Console.Write("Overwrite? (y/N): ");
                 
                 var response = Console.ReadLine()?.Trim().ToLowerInvariant();
+                verboseLogger.WriteLine($"ExportCommand: User response: {response}");
                 if (response != "y" && response != "yes")
                 {
+                    verboseLogger.WriteLine("ExportCommand: User cancelled operation");
                     Console.WriteLine("Operation cancelled.");
                     Environment.Exit(0);
                     return;
                 }
+                verboseLogger.WriteLine("ExportCommand: User confirmed overwrite");
                 Console.WriteLine();
             }
 
@@ -96,6 +109,7 @@ public static class ExportCommand
             Console.WriteLine();
 
             // Export configuration (T082)
+            verboseLogger.WriteOperation("ExportCommand", $"Exporting configuration to: {filePath}");
             var result = await configurationStore.ExportAsync(
                 filePath,
                 includeDefaults,
@@ -103,10 +117,12 @@ public static class ExportCommand
 
             if (result.Success)
             {
+                verboseLogger.WriteLine($"ExportCommand: Successfully exported to {filePath}");
                 Console.WriteLine($"✓ Successfully exported configuration to '{filePath}'");
                 
                 // Show file size
                 var fileInfo = new FileInfo(filePath);
+                verboseLogger.WriteLine($"ExportCommand: File size: {fileInfo.Length} bytes");
                 Console.WriteLine($"  File size: {fileInfo.Length:N0} bytes");
                 
                 // Audit logging (T089) is already done in ConfigurationStore
@@ -114,12 +130,14 @@ public static class ExportCommand
             }
             else
             {
+                verboseLogger.WriteError($"ExportCommand failed: {result.Message}");
                 Console.Error.WriteLine($"Error: {result.Message}");
                 Environment.Exit(2); // Exit code 2: Operation failed
             }
         }
         catch (Exception ex)
         {
+            verboseLogger.WriteException(ex);
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             auditLogger.LogError($"Export command failed with exception: {ex.Message}", ex);
             Environment.Exit(1); // Exit code 1: General error

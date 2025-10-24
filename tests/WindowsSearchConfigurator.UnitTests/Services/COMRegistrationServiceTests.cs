@@ -31,6 +31,12 @@ public class COMRegistrationServiceTests
             _verboseLogger);
     }
 
+    [TearDown]
+    public void TearDown()
+    {
+        _verboseLogger?.Dispose();
+    }
+
     [Test]
     public void Constructor_WithNullDetector_ThrowsArgumentNullException()
     {

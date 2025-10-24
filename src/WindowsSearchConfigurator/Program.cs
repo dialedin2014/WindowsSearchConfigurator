@@ -47,6 +47,22 @@ public class Program
             var serviceProvider = services.BuildServiceProvider();
 
             var verboseLogger = serviceProvider.GetRequiredService<VerboseLogger>();
+
+            // Initialize file logging if verbose mode is enabled
+            if (verboseMode)
+            {
+                var fileLogger = serviceProvider.GetRequiredService<IFileLogger>();
+                var logFileNameGenerator = serviceProvider.GetRequiredService<ILogFileNameGenerator>();
+                var logFileName = logFileNameGenerator.GenerateFileName();
+                var logFilePath = Path.Combine(AppContext.BaseDirectory, logFileName);
+                var commandLine = $"{Environment.ProcessPath ?? "WindowsSearchConfigurator.exe"} {string.Join(" ", args)}";
+
+                if (verboseLogger.InitializeFileLogging(fileLogger, logFilePath, commandLine))
+                {
+                    Console.WriteLine($"Verbose logging enabled. Log file: {logFileName}");
+                }
+            }
+
             verboseLogger.WriteLine("Windows Search Configurator starting...");
             verboseLogger.WriteLine($"Command-line arguments: {string.Join(" ", args)}");
             if (autoRegisterCOM)
@@ -270,17 +286,26 @@ public class Program
 
             var configurationStore = serviceProvider.GetRequiredService<IConfigurationStore>();
 
-            rootCommand.Add(ListCommand.Create(searchIndexManager, consoleFormatter));
-            rootCommand.Add(AddCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger));
-            rootCommand.Add(RemoveCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger));
-            rootCommand.Add(ModifyCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger));
-            rootCommand.Add(SearchExtensionsCommand.Create(searchIndexManager, consoleFormatter));
-            rootCommand.Add(ConfigureDepthCommand.Create(searchIndexManager, privilegeChecker, auditLogger));
-            rootCommand.Add(ExportCommand.Create(configurationStore, auditLogger));
-            rootCommand.Add(ImportCommand.Create(configurationStore, privilegeChecker, auditLogger));
+            rootCommand.Add(ListCommand.Create(searchIndexManager, consoleFormatter, verboseLogger));
+            rootCommand.Add(AddCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger, verboseLogger));
+            rootCommand.Add(RemoveCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger, verboseLogger));
+            rootCommand.Add(ModifyCommand.Create(searchIndexManager, privilegeChecker, pathValidator, auditLogger, verboseLogger));
+            rootCommand.Add(SearchExtensionsCommand.Create(searchIndexManager, consoleFormatter, verboseLogger));
+            rootCommand.Add(ConfigureDepthCommand.Create(searchIndexManager, privilegeChecker, auditLogger, verboseLogger));
+            rootCommand.Add(ExportCommand.Create(configurationStore, auditLogger, verboseLogger));
+            rootCommand.Add(ImportCommand.Create(configurationStore, privilegeChecker, auditLogger, verboseLogger));
 
             // Execute command
-            return await rootCommand.InvokeAsync(args);
+            var exitCode = await rootCommand.InvokeAsync(args);
+
+            // Complete logging session with exit code
+            if (verboseMode)
+            {
+                verboseLogger.CompleteSession(exitCode);
+                verboseLogger.Dispose();
+            }
+
+            return exitCode;
         }
         catch (Exception ex)
         {
@@ -296,6 +321,21 @@ public class Program
                 {
                     Console.Error.WriteLine($"\nInner Exception: {ex.InnerException.GetType().Name}");
                     Console.Error.WriteLine($"Inner Message: {ex.InnerException.Message}");
+                }
+
+                // Try to get verbose logger from DI to complete session
+                try
+                {
+                    var services = ConfigureServices(verboseMode);
+                    var serviceProvider = services.BuildServiceProvider();
+                    var verboseLogger = serviceProvider.GetRequiredService<VerboseLogger>();
+                    verboseLogger.WriteException(ex);
+                    verboseLogger.CompleteSession(1);
+                    verboseLogger.Dispose();
+                }
+                catch
+                {
+                    // Ignore errors in error handling
                 }
             }
             return 1;
@@ -314,6 +354,10 @@ public class Program
         // Register verbose logger
         var verboseLogger = new VerboseLogger { IsEnabled = verboseMode };
         services.AddSingleton(verboseLogger);
+
+        // Register file logging services
+        services.AddSingleton<IFileLogger, FileLogger>();
+        services.AddSingleton<ILogFileNameGenerator, LogFileNameGenerator>();
 
         // Register core interfaces and implementations
         services.AddSingleton<IPrivilegeChecker, PrivilegeChecker>();

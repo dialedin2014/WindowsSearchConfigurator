@@ -1,6 +1,7 @@
 using System.CommandLine;
 using WindowsSearchConfigurator.Core.Interfaces;
 using WindowsSearchConfigurator.Services;
+using WindowsSearchConfigurator.Utilities;
 
 namespace WindowsSearchConfigurator.Commands;
 
@@ -16,12 +17,14 @@ public static class RemoveCommand
     /// <param name="privilegeChecker">The privilege checker service.</param>
     /// <param name="pathValidator">The path validator service.</param>
     /// <param name="auditLogger">The audit logger service.</param>
+    /// <param name="verboseLogger">The verbose logger service.</param>
     /// <returns>The configured command.</returns>
     public static Command Create(
         ISearchIndexManager searchIndexManager,
         IPrivilegeChecker privilegeChecker,
         PathValidator pathValidator,
-        IAuditLogger auditLogger)
+        IAuditLogger auditLogger,
+        VerboseLogger verboseLogger)
     {
         var command = new Command("remove", "Remove a location from the Windows Search index");
 
@@ -46,6 +49,7 @@ public static class RemoveCommand
                 privilegeChecker,
                 pathValidator,
                 auditLogger,
+                verboseLogger,
                 path,
                 force);
         }, pathArgument, forceOption);
@@ -61,25 +65,34 @@ public static class RemoveCommand
         IPrivilegeChecker privilegeChecker,
         PathValidator pathValidator,
         IAuditLogger auditLogger,
+        VerboseLogger verboseLogger,
         string path,
         bool force)
     {
         try
         {
+            verboseLogger.WriteLine("RemoveCommand: Executing remove command");
+            verboseLogger.WriteOperation("RemoveCommand", $"Path: {path}, Force: {force}");
+
             // Check for administrator privileges (T059)
+            verboseLogger.WriteLine("RemoveCommand: Checking administrator privileges");
             if (!privilegeChecker.IsAdministrator())
             {
+                verboseLogger.WriteError("Remove command failed: Insufficient privileges");
                 Console.Error.WriteLine("Error: Administrator privileges required to remove index rules.");
                 Console.Error.WriteLine("Please restart the application as administrator.");
                 auditLogger.LogError("Remove command failed: Insufficient privileges");
                 Environment.Exit(4); // Exit code 4: Insufficient privileges
                 return;
             }
+            verboseLogger.WriteLine("RemoveCommand: Privilege check passed");
 
             // Validate and normalize the path
+            verboseLogger.WriteLine($"RemoveCommand: Validating path: {path}");
             var validation = pathValidator.ValidatePath(path);
             if (!validation.IsValid)
             {
+                verboseLogger.WriteError($"Path validation failed: {validation.ErrorMessage}");
                 Console.Error.WriteLine($"Error: {validation.ErrorMessage}");
                 auditLogger.LogError($"Remove command failed: Invalid path '{path}' - {validation.ErrorMessage}");
                 Environment.Exit(3); // Exit code 3: Invalid input
@@ -87,6 +100,7 @@ public static class RemoveCommand
             }
 
             var normalizedPath = validation.NormalizedValue!;
+            verboseLogger.WriteLine($"RemoveCommand: Path normalized to: {normalizedPath}");
 
             // Confirmation prompt (T060) - skippable with --force
             if (!force)
@@ -108,10 +122,12 @@ public static class RemoveCommand
             }
 
             // Remove the rule (T061: error handling for non-existent rule is in SearchIndexManager)
+            verboseLogger.WriteOperation("RemoveCommand", $"Removing index rule for: {normalizedPath}");
             var result = await searchIndexManager.RemoveIndexRuleAsync(normalizedPath);
 
             if (result.Success)
             {
+                verboseLogger.WriteLine($"RemoveCommand: Successfully removed index rule for '{normalizedPath}'");
                 Console.WriteLine($"✓ Successfully removed index rule for '{normalizedPath}'");
                 Console.WriteLine("Windows Search will no longer index this location.");
                 
@@ -120,12 +136,14 @@ public static class RemoveCommand
             }
             else
             {
+                verboseLogger.WriteError($"RemoveCommand failed: {result.Message}");
                 Console.Error.WriteLine($"Error: {result.Message}");
                 Environment.Exit(2); // Exit code 2: Operation failed
             }
         }
         catch (Exception ex)
         {
+            verboseLogger.WriteException(ex);
             Console.Error.WriteLine($"Unexpected error: {ex.Message}");
             auditLogger.LogError($"Remove command failed with exception: {ex.Message}", ex);
             Environment.Exit(1); // Exit code 1: General error
